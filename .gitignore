@@ -1,0 +1,11 @@
+*.rar
+venv/
+*.pyc
+.idea/
+.idea
+*.iws
+workspace.xml
+tasks.xml
+*.iml
+modules.xml
+vcs.xml
