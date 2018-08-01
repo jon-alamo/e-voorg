@@ -7,6 +7,10 @@ Akai MPD218 but it could be easily extended to any other midi device by modifyin
 corresponding heading keys (NOTE and CHANNEL messages) by the right ones according to the interface to be used. Default
 midi channel is 10 (9 in the code) for midi notes and 1 (0 in the code) for control change messages.
 
+## Links
+- Real time quantization demo: https://www.youtube.com/watch?v=HnI5RXI-YSg
+- Looper by single note demo: https://www.youtube.com/watch?v=QavT15YHcmk
+
 ## Notes
 The code is Python 3.6 and can runs on Windows, Linux and Mac, with the rtmidi dependencies previously installed.
 
