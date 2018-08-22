@@ -45,7 +45,7 @@
         78: {'function': 'loop_pressed', 'value': None},
         79: {'function': 'loop_pressed', 'value': None},
         80: {'function': 'switch_metronome', 'value': None},
-        81: {'function': 'switch_triplet', 'value': None},
+        81: {'function': 'switch_triplets', 'value': None},
         82: {'function': 'switch_recording', 'value': None},
         83: {'function': 'play_stop', 'value': None}
     },
@@ -79,8 +79,11 @@
         77: {'function': 'loop_released', 'value': None},
         78: {'function': 'loop_released', 'value': None},
         79: {'function': 'loop_released', 'value': None},
-        80: {'function': 'loop_released', 'value': None},
-        81: {'function': 'loop_released', 'value': None}
+        80: {'function': 'switch_metronome_feedback', 'value': None},
+        81: {'function': 'switch_triplets_feedback', 'value': None},
+        82: {'function': 'switch_recording_feedback', 'value': None},
+        83: {'function': 'play_stop_feedback', 'value': None}
+
     },
     POLY_PRESSURE_HEADING: {
         36: {'function': 'pressure', 'value': None},
@@ -108,5 +111,38 @@
         13: {'function': 'randomizer', 'value': None},
         14: {'function': 'groove_velocity', 'value': None},
         15: {'function': 'velocity', 'value': None}
+    },
+
+    'feedback_functions': {
+        'switch_metronome': {
+            'on': [153, 80, 127],
+            'off': [153, 80, 0]
+        },
+        'switch_triplets': {
+            'on': [153, 81, 127],
+            'off': [153, 81, 0]
+        },
+        'switch_recording': {
+            'on': [153, 82, 127],
+            'off': [153, 82, 0]
+        },
+        'play_stop': {
+            'on': [153, 83, 127],
+            'off': [153, 83, 0]
+        },
+        'preset_saved': {
+            68: [153, 68, 127],
+            69: [153, 69, 127],
+            70: [153, 70, 127],
+            71: [153, 71, 127],
+            72: [153, 72, 127],
+            73: [153, 73, 127],
+            74: [153, 74, 127],
+            75: [153, 75, 127],
+            76: [153, 76, 127],
+            77: [153, 77, 127],
+            78: [153, 78, 127],
+            79: [153, 79, 127]
+        }
     }
 }

@@ -48,7 +48,7 @@ class MidiClock(object):
         :param bpm: Integer from MIN_BPM (60) to MAX_BPM (180)
         :return: None
         """
-        if MIN_BPM > bpm > MAX_BPM:
+        if MIN_BPM <= bpm <= MAX_BPM:
             self.bpm = bpm
             self.tick_time = 2.5 / self.bpm
 

@@ -3,15 +3,27 @@ from src.midi_interface import MidiInterface
 from src.recorder import Recorder
 import src.midi_data as midi_data
 import time
+import copy
 
 LONG_PRESS_TIME = 0.1
 
 
 class Rhythm(object):
 
-    def __init__(self, usb_midi_interface=None, drum_pad_interface=None, midi_map=None,
-                 metronome_note=37, note_channel=9, control_channel=0, poly_pressure_heading=None, note_on_heading=None,
-                 note_off_heading=None, control_change_heading=None):
+    def __init__(
+            self,
+            usb_midi_interface=None,
+            drum_pad_interface=None,
+            midi_map=None,
+            metronome_note=37,
+            note_channel=9,
+            control_channel=0,
+            poly_pressure_heading=None,
+            note_on_heading=None,
+            note_off_heading=None,
+            control_change_heading=None,
+            note_on_feedback=None
+    ):
 
         # Place arguments
         self.usb_midi_interface = usb_midi_interface
@@ -21,12 +33,12 @@ class Rhythm(object):
         self.poly_pressure_heading = poly_pressure_heading
         self.note_on_heading = note_on_heading
         self.note_off_heading = note_off_heading
-        self.contorl_change_heading = control_change_heading
+        self.control_change_heading = control_change_heading
         self.note_channel = note_channel
         self.control_channel = control_channel
-        self.metronome_note = metronome_note
-        self.loud_metronome_message = [self.note_channel, self.metronome_note, 110]
-        self.weak_metronome_message = [self.note_channel, self.metronome_note, 90]
+        self.metronome_note = int(metronome_note)
+        self.loud_metronome_message = [midi_data.NOTE_ON[self.note_channel], self.metronome_note, 110]
+        self.weak_metronome_message = [midi_data.NOTE_ON[self.note_channel], self.metronome_note, 90]
 
         # Note on arrays to relate note loops with playing notes
         self.playing_notes = list(filter(lambda x: self.midi_map[self.note_on_heading][x]['function'] == 'note_on',
@@ -43,7 +55,7 @@ class Rhythm(object):
         self.clock = MidiClock(120)
 
         # INITIALIZE RECORDER
-        self.recorder = Recorder(self.playing_notes)
+        self.recorder = Recorder(self.playing_notes, self.note_loops)
 
         # REFERENCE TO EXTERNAL PACKAGES METHODS
         self.timer = time.perf_counter
@@ -54,18 +66,12 @@ class Rhythm(object):
         self.next_note_16th_buffer = {}
         # Notes to be appended to previous note 16th
         self.last_note_16th_buffer = {}
-        # Interface state
-        self.interface_state = {
-            'play': False,
-            'playing_preset': None,
-            'saved_presets': [],
-            'note_loop_with_notes': [],
-            'metronome': False,
-            'recording': False,
-            'triplets': False
-        }
+        # Note on feedback
+        self.note_on_feedback = eval(note_on_feedback)
         # Feedback notes buffer
         self.feedback_note_buffer = {}
+        # Current notes on
+        self.current_notes_lighted = {}
         # Notes to play on current clock event
         self.notes_to_play_now = {}
         # Pressed notes
@@ -89,6 +95,10 @@ class Rhythm(object):
         self.min_bpm = 60
         # Interface state
         self.interface_state = {}
+        # Saved presets
+        self.saved_presets = {}
+        self.current_playing_preset = None
+        self.metronome_lighted = False
 
     def main_loop(self):
         """
@@ -122,25 +132,6 @@ class Rhythm(object):
                 # Process interaction
                 self.process_interaction(interaction, midi_message, tick)
 
-            # Feedback
-            self.send_feedback()
-
-    def send_feedback(self):
-        # Get remaining time to the next clock tick event
-        remaining_time = self.clock.remaining_time()
-
-        # If there is enough time and notes to be send back to drum pad interface
-        if self.feedback_note_buffer and remaining_time > 0.0:
-            feedback_max_actions = int(remaining_time * 1000)
-            feedback_actions = 0
-
-        feedback_actions = list(self.feedback_note_buffer.keys())
-
-        for feedback_action in feedback_actions:
-            feedback_value = self.feedback_note_buffer.pop(feedback_action)
-            if feedback_action == 'play':
-                self.drum_pad.send([self.note_on_heading, feedback_value])
-
     def process_interaction(self, interaction, midi_message, tick):
         """
         This method process every user interaction received by the pad midi interface. Interactions can be notes on/off,
@@ -168,6 +159,8 @@ class Rhythm(object):
             # Play stop switch the play state to the opposite.
             elif interaction['function'] == 'play_stop':
                 self.play_stop()
+            elif interaction['function'] == 'play_stop_feedback':
+                self.play_stop_feedback()
 
             # A note off interaction is meant to be a release for the long press functionalities, since note_on
             # interactions manage their own note off midi messages.
@@ -184,7 +177,6 @@ class Rhythm(object):
             # Delete interaction removes if exists the entire corresponding note loop playing in that moment.
             elif interaction['function'] == 'delete':
                 self.recorder.delete_loop(midi_message[1])
-                self.feedback_note_buffer['delete_note_loop_with_notes'] = midi_message
 
             # A loop pressed mark a time to the pressed pad and will count the time elapsed until its release.
             elif interaction['function'] == 'loop_pressed':
@@ -197,20 +189,40 @@ class Rhythm(object):
                 note = midi_message[1]
                 if self.timer() - self.pressed_presets.pop(note) < LONG_PRESS_TIME:
                     self.recorder.play_preset(note)
+                    if note in self.saved_presets:
+                        if self.current_playing_preset:
+                            self.preset_saved_feedback(self.current_playing_preset)
+                        self.current_playing_preset = note
                 else:
                     self.recorder.save_preset(note)
+                    self.preset_saved_feedback(note)
+                    self.saved_presets[note] = True
+                    if self.current_playing_preset:
+                        self.preset_saved_feedback(self.current_playing_preset)
+                    self.current_playing_preset = note
 
             # switch_recording interaction switch the recording state between on/off.
             elif interaction['function'] == 'switch_recording':
                 self.switch_recording()
+            elif interaction['function'] == 'switch_recording_feedback':
+                self.switch_recording_feedback()
 
             # Switch metronome alternates between metronome on/off.
             elif interaction['function'] == 'switch_metronome':
                 self.switch_metronome()
+            elif interaction['function'] == 'switch_metronome_feedback':
+                self.switch_metronome_feedback()
 
             # Switch triplets alternates between metronome on/off.
             elif interaction['function'] == 'switch_triplets':
                 self.switch_triplets()
+
+            elif interaction['function'] == 'switch_triplets_feedback':
+                self.switch_triplets_feedback()
+
+            # Set new bpm
+            elif interaction['function'] == 'tempo':
+                self.set_bpm(midi_message[2])
 
     def process_tick_event(self, tick_count):
         """
@@ -219,33 +231,30 @@ class Rhythm(object):
         """
 
         # If metronome is active will play the note, loud or weak depending on the tick value (first beat of bar or not)
-        if self.is_metronome and tick_count % 24 == 1:
-            if tick_count == 1:
-                self.main_midi.send(self.loud_metronome_message)
-            else:
-                self.main_midi.send([self.weak_metronome_message])
+        if tick_count % 24 == 1:
+            if self.is_metronome:
+                if tick_count == 1:
+                    self.main_midi.send(self.loud_metronome_message)
+                else:
+                    self.main_midi.send(self.weak_metronome_message)
+
+            # Lighting synchronized with metronome
+            self.process_metronome_feedback_on()
+            self.metronome_lighted = True
 
         # If the tick corresponds to a 16th note
         if tick_count % 6 == 1:
             self.process_midi_16th_note_event()
 
         # If th tick corresponds to a triplet note
-        if tick_count % 4 == 1:
+        if tick_count % 4 == 1 and self.is_triplets:
+            self.metronome_lighted = True
             self.process_midi_16th_3_note_event()
 
         # If recording state is active or not...
         if self.is_recording:
             self.notes_to_play_now.update(
                 self.recorder.set_rec_get_play(tick_count, self.notes_to_play_now, self.last_note_16th_buffer))
-
-            # Feedback buffer
-            if 'note_loop_with_notes' in self.feedback_note_buffer:
-                self.feedback_note_buffer['note_loop_with_notes'].extend(list(self.notes_to_play_now.keys())).extend(
-                    list(self.last_note_16th_buffer.keys()))
-            else:
-                self.feedback_note_buffer['note_loop_with_notes'] = list(self.notes_to_play_now.keys()) + list(
-                    self.last_note_16th_buffer.keys())
-
         else:
             self.notes_to_play_now.update(self.recorder.set_rec_get_play(tick_count, {}, {}))
 
@@ -254,6 +263,9 @@ class Rhythm(object):
 
         # Process notes to play now
         self.process_notes_to_play_now()
+
+        if tick_count % 24 == 2:
+            self.process_metronome_feedback_off()
 
     def get_interaction_from_midi_message(self, midi_message):
         """
@@ -280,6 +292,8 @@ class Rhythm(object):
         :return: None
         """
         notes = list(self.notes_to_play_now)
+        current_notes_lighted = copy.deepcopy(self.current_notes_lighted)
+        self.current_notes_lighted = {}
 
         # Send notes on
         for note in notes:
@@ -287,10 +301,14 @@ class Rhythm(object):
             self.main_midi.send(midi_message)
             self.main_midi.send([midi_data.NOTE_ON[self.note_channel], note, 0])
 
-        if 'notes' in self.feedback_note_buffer:
-            self.feedback_note_buffer['notes'].extend(notes)
-        else:
-            self.feedback_note_buffer['notes'] = notes
+            # If device support note on feedback, turn note light on
+            if self.note_on_feedback:
+                self.drum_pad.send(midi_message)
+                self.current_notes_lighted[midi_message[1]] = midi_message
+
+        # Turn previous lighted notes off
+        for note in current_notes_lighted:
+            self.drum_pad.send([midi_data.NOTE_ON[self.note_channel], note, 0])
 
     def process_midi_16th_3_note_event(self):
         """
@@ -323,39 +341,80 @@ class Rhythm(object):
         self.last_note_16th_buffer = {}
 
     def set_bpm(self, value):
-        self.clock.set_bpm(value)
+        """
+        This method adjust the input value from the corresponding midi control change to the bpm range and sets it to
+        the midi clock.
+        :param value: value between 0 and 127
+        :return: None
+        """
+        # Adjust control change range to bpm range
+        bpm = int(self.min_bpm + value * (self.max_bpm - self.min_bpm) / 127.)
+        self.clock.set_bpm(bpm)
 
     def play_stop(self):
         if self.is_play:
             self.is_play = 0
             self.main_midi.send([midi_data.SONG_STOP])
             self.clock.stop()
-            self.feedback_note_buffer['play'] = False
         elif not self.is_play:
             self.is_play = 2
             self.clock.start()
-            self.feedback_note_buffer['play'] = True
 
     def switch_recording(self):
         if self.is_recording:
             self.is_recording = False
-            self.feedback_note_buffer['recording'] = False
         else:
             self.is_recording = True
-            self.feedback_note_buffer['recording'] = True
 
     def switch_triplets(self):
         if self.is_triplets:
             self.is_triplets = False
-            self.feedback_note_buffer['triplets'] = False
         else:
             self.is_triplets = True
-            self.feedback_note_buffer['triplets'] = True
 
     def switch_metronome(self):
         if self.is_metronome:
             self.is_metronome = False
-            self.feedback_note_buffer['metronome'] = False
         else:
             self.is_metronome = True
-            self.feedback_note_buffer['metronome'] = True
+
+    def play_stop_feedback(self):
+        if self.is_play:
+            self.set_feedback('play_stop', 'on')
+        elif not self.is_play:
+            self.set_feedback('play_stop', 'off')
+
+    def switch_recording_feedback(self):
+        if self.is_recording:
+            self.set_feedback('switch_recording', 'on')
+        else:
+            self.set_feedback('switch_recording', 'off')
+
+    def switch_triplets_feedback(self):
+        if self.is_triplets:
+            self.set_feedback('switch_triplets', 'on')
+        else:
+            self.set_feedback('switch_triplets', 'off')
+
+    def switch_metronome_feedback(self):
+        if self.is_metronome:
+            self.set_feedback('switch_metronome', 'on')
+        else:
+            self.set_feedback('switch_metronome', 'off')
+
+    def set_feedback(self, key, state):
+        feedback_message = self.midi_map['feedback_functions'][key][state]
+        self.drum_pad.send(feedback_message)
+
+    def preset_saved_feedback(self, note):
+        feedback_message = self.midi_map['feedback_functions']['preset_saved'][note]
+        self.drum_pad.send(feedback_message)
+
+    def process_metronome_feedback_on(self):
+        if self.current_playing_preset:
+            self.drum_pad.send([153, self.current_playing_preset, 127])
+
+    def process_metronome_feedback_off(self):
+        if self.current_playing_preset:
+            self.drum_pad.send([153, self.current_playing_preset, 0])
+

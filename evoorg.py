@@ -11,6 +11,7 @@ METRONOME_NOTE = config.get(section='MIDI', option='metronome_note')
 USB_MIDI_INTERFACE = config.get(section='DEVICES', option='usb_midi_interface')
 DRUM_PAD_INTERFACE = config.get(section='DEVICES', option='drum_pad_interface')
 DRUM_PAD_MIDI_MAP = config.get(section='DEVICES', option='drum_pad_midi_map')
+NOTE_ON_FEEDBACK = config.get(section='DEVICES', option='note_on_feedback')
 
 POLY_PRESSURE_HEADING = midi_data.POLY_PRESSURE[NOTE_CHANNEL]
 NOTE_ON_HEADING = midi_data.NOTE_ON[NOTE_CHANNEL]
@@ -32,7 +33,8 @@ if __name__ == '__main__':
         poly_pressure_heading=POLY_PRESSURE_HEADING,
         note_on_heading=NOTE_ON_HEADING,
         note_off_heading=NOTE_OFF_HEADING,
-        control_change_heading=CONTROL_CHANGE_HEADING
+        control_change_heading=CONTROL_CHANGE_HEADING,
+        note_on_feedback=NOTE_ON_FEEDBACK
     )
 
     # START EXECUTION

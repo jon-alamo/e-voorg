@@ -4,9 +4,10 @@ from timeit import default_timer as timer
 
 class Recorder(object):
 
-    def __init__(self, playing_notes):
+    def __init__(self, playing_notes, note_loops):
         # Playing notes
         self.playing_notes = playing_notes
+        self.note_loops = note_loops
 
         # Empty bar
         self.empty_bar = [0] * 96
@@ -162,8 +163,9 @@ class Recorder(object):
         return notes_to_play
 
     def delete_loop(self, note):
-        self.recordings[0][note] = [self.empty_bar]
-        self.note_loop_bar_indexes[note] = 0
+        map_note = self.playing_notes[self.note_loops.index(note)]
+        self.recordings[0][map_note] = [self.empty_bar]
+        self.note_loop_bar_indexes[map_note] = 0
 
     def save_preset(self, note):
         self.recordings[note] = copy.deepcopy(self.recordings[0])
