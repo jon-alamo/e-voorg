@@ -21,7 +21,7 @@ class MidiInterface(object):
         self.input_port = self.search_device(device_name, self.midi_in)
 
         # Ignore types in midi_in
-        self.midi_in.ignore_types(False, False, False)
+        self.midi_in.ignore_types(True, False, True)
 
         # Open ports
         self.midi_out.open_port(self.output_port)
