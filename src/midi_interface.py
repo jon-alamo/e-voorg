@@ -1,6 +1,6 @@
 import rtmidi
 import time
-import src.midi_data
+import src.midi_data as midi_data
 import threading
 
 SLEEP_AFTER_NOTE_OFF_BUFFER_FLUSH = 0.001

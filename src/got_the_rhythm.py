@@ -99,6 +99,8 @@ class Rhythm(object):
         self.saved_presets = {}
         self.current_playing_preset = None
         self.metronome_lighted = False
+        # Note Mutes
+        self.note_mutes = {key: False for key in range(36, 52)}
 
     def main_loop(self):
         """
@@ -168,6 +170,9 @@ class Rhythm(object):
                 note = midi_message[1]
                 self.pressed_notes[note] = 0
                 self.pressed_notes.pop(note)
+
+                self.note_mutes[note] = False
+
 
             # Pressure interactions are used to perform triplets on the note with the same id of the pressure message.
             elif interaction['function'] == 'pressure':
@@ -298,13 +303,18 @@ class Rhythm(object):
         # Send notes on
         for note in notes:
             midi_message = self.notes_to_play_now.pop(note)
-            self.main_midi.send(midi_message)
-            self.main_midi.send([midi_data.NOTE_ON[self.note_channel], note, 0])
+
+            if not self.note_mutes[note]:
+                self.main_midi.send(midi_message)
+                self.main_midi.send([midi_data.NOTE_ON[self.note_channel], note, 0])
 
             # If device support note on feedback, turn note light on
             if self.note_on_feedback:
                 self.drum_pad.send(midi_message)
                 self.current_notes_lighted[midi_message[1]] = midi_message
+
+            if not self.is_triplets and note in self.pressed_notes:
+                self.note_mutes[note] = True
 
         # Turn previous lighted notes off
         for note in current_notes_lighted:
