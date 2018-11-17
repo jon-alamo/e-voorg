@@ -1,7 +1,8 @@
 from src.midi_clock import MidiClock
-from src.midi_interface import MidiInterface
+from src.interfaces.midi_interface import MidiInterface
 from src.recorder import Recorder
-import src.midi_data as midi_data
+from src.interfaces.ethernet_interface.ethernet_interface import EthernetServerInterface
+import src.interfaces.midi_interface.midi_data as midi_data
 import time
 import copy
 
@@ -22,7 +23,9 @@ class Rhythm(object):
             note_on_heading=None,
             note_off_heading=None,
             control_change_heading=None,
-            note_on_feedback=None
+            note_on_feedback=None,
+            host='0.0.0.0',
+            port=5000
     ):
 
         # Place arguments
@@ -48,6 +51,8 @@ class Rhythm(object):
 
         # INITIALIZE MIDI INTERFACES
         self.main_midi = MidiInterface(usb_midi_interface)
+        self.main_midi = EthernetServerInterface(host=host, port=port)
+
         # Initialize drum pad.
         self.drum_pad = MidiInterface(drum_pad_interface)
 

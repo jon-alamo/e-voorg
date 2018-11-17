@@ -1,6 +1,6 @@
 import unittest
 from src.recorder import Recorder
-import src.midi_data as midi_data
+import src.interfaces.midi_interface.midi_data as midi_data
 
 RECORDING_STATE = 2
 LEAVING_RECORDING_STATE = 1
