@@ -69,10 +69,10 @@ class View:
         self.draw_state('rec_mode')
 
     def play_clip(self, message):
-        print(f'play_clip: {message}')
+        pass
 
     def delete_clip(self, message):
-        print(f'delete_clip: {message}')
+        pass
 
     def save_clip(self, message):
-        print(f'save_clip: {message}')
+        pass
