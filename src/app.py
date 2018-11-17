@@ -4,6 +4,8 @@ from src.controller.controller_maps.mpd232 import controller_map
 from src.view.view import View
 from src.view.view_maps.mpd232 import view_map
 from src.recorder.recorder import Recorder
+from src.interfaces.midi_interface.midi_data import SONG_START, SONG_STOP, TIMING_CLOCK
+
 import time
 
 
@@ -122,13 +124,16 @@ class App:
     def external_tick(self):
         self.tick = self.tick % 96 + 1
         self.is_tick = True
+        self.midi_out_interface.send([TIMING_CLOCK])
 
     def stop(self):
         self.is_play = False
+        self.midi_out_interface.send([SONG_STOP])
 
     def play(self):
         self.tick = 1
         self.is_play = True
+        self.midi_out_interface.send([SONG_START])
 
     def set_rec_on_off(self):
         self.is_rec = bool(abs(self.is_rec) - 1)
