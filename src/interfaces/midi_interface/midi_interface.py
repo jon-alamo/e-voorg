@@ -18,7 +18,7 @@ class MidiInterface(object):
         self.output_device_name = output_device_name
 
         if self.output_device_name:
-            print(f'self.output_device_name: {self.output_device_name}')
+            print('self.output_device_name: {output_device_name}'.format(output_device_name=self.output_device_name))
             self.midi_out = rtmidi.MidiOut()
             # I/O Midi ports to work with in this interfafe.
             self.output_port = self.search_device(self.output_device_name, self.midi_out)
@@ -26,7 +26,7 @@ class MidiInterface(object):
             self.midi_out.open_port(self.output_port)
 
         if self.input_device_name:
-            print(f'self.input_device_name: {self.input_device_name}')
+            print('self.input_device_name: {input_device_name}'.format(input_device_name=self.input_device_name))
             self.midi_in = rtmidi.MidiIn()
             self.input_port = self.search_device(self.input_device_name, self.midi_in)
             # Ignore types in midi_in
