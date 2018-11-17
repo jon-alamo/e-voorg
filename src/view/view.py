@@ -1,11 +1,21 @@
 from src.view.view_maps.mpd232 import colors
+from src.interfaces.midi_interface.midi_interface import MidiInterface
+
 
 class View:
 
-    def __init__(self, view_interface, view_map):
+    def __init__(self, view_interface: MidiInterface, view_map: dict):
         self.interface = view_interface
         self.view_map = view_map
         self.colors = colors
+
+        # Interface state
+        self.clips = {key: False for key in range(36, 100)}
+        self.current_clip = 0
+        self.current_view = 'default_view'
+        self.delete_mode = False
+        self.is_rec = False
+        self.tiplets_mode = False
 
     def draw_feedback(self, control):
 
@@ -22,56 +32,80 @@ class View:
             # Call the method with keyword arguments
             fcn(**kwargs)
 
-    def draw_state(self, state):
-        midi_map = self.view_map[state]['midi_map']
-        value = self.view_map[state]['color']
-        msg = (midi_map[0], midi_map[1], value)
-        self.interface.enqueue(msg)
+    def draw_state(self, state, state_id=None):
+        if state_id:
+            address = self.view_map[state][state_id]['midi_address']
+            value = self.view_map[state][state_id]['color']
+            msg = (address, state_id, value)
+            self.interface.enqueue(msg)
+
+        else:
+            for state_id in self.view_map[state]:
+                address = self.view_map[state][state_id]['midi_address']
+                value = self.view_map[state][state_id]['color']
+                msg = (address, state_id, value)
+                self.interface.enqueue(msg)
 
     def set_view(self, view):
-        if view == 'clips_view':
-            self.view_map['clips_view_button']['color'] = colors['on']
-            self.view_map['default_view_button']['color'] = colors['off']
-        elif view == 'default_view':
-            self.view_map['default_view_button']['color'] = colors['on']
-            self.view_map['clips_view_button']['color'] = colors['off']
+        self.current_view = view
+        self.draw_state(view)
 
-        self.draw_state('clips_view_button')
-        self.draw_state('default_view_button')
+        if self.current_view == 'default_view':
+            self.draw_state('note_off')
 
-        for state in filter(lambda x: self.view_map[x]['view'] == view, self.view_map):
-            self.draw_state(state)
+        elif self.current_view == 'clips_view':
+            for clip in self.clips:
+                if self.clips[clip]:
+                    self.draw_state('clip_on', clip)
+                else:
+                    self.draw_state('clip_off', clip)
 
-    def switch_mode(self, mode):
-        self.default_mode = mode
-        if self.view_map[mode]['color'] == colors['off']:
-            self.view_map[mode]['color'] = colors['on']
+    def set_delete_mode_on_off(self, mode):
+        self.delete_mode = bool(abs(self.delete_mode - 1))
+        if self.delete_mode:
+            self.draw_state('delete_mode')
         else:
-            self.view_map[mode]['color'] = colors['off']
+            self.draw_state('default_mode')
 
-        self.draw_state(mode)
-
-    def set_tripplets_on_off(self):
-        if self.view_map['tripplets']['color'] == colors['off']:
-            self.view_map['tripplets']['color'] = colors['on']
+    def set_triplets_on_off(self):
+        self.tiplets_mode = bool(abs(self.tiplets_mode - 1))
+        if self.tiplets_mode:
+            self.draw_state('triplets_button_on')
         else:
-            self.view_map['tripplets']['color'] = colors['off']
-
-        self.draw_state('tripplets')
+            self.draw_state('triplets_button_off')
 
     def set_rec_on_off(self):
-        if self.view_map['rec_mode']['color'] == colors['off']:
-            self.view_map['rec_mode']['color'] = colors['on']
+        self.is_rec = bool(abs(self.is_rec - 1))
+        if self.is_rec:
+            self.draw_state('rec_on')
         else:
-            self.view_map['rec_mode']['color'] = colors['off']
+            self.draw_state('rec_off')
 
-        self.draw_state('rec_mode')
+    def note_on(self, message):
+        if self.current_view == 'default_view':
+            self.draw_state('note_on', message[1])
+
+    def note_off(self, message):
+        if self.current_view == 'default_view':
+            self.draw_state('note_off', message[1])
 
     def play_clip(self, message):
-        pass
+        self.current_clip = message[1]
 
     def delete_clip(self, message):
-        pass
+        self.clips[message[1]] = False
+        self.draw_state('clip_off', message[1])
 
     def save_clip(self, message):
-        pass
+        self.clips[message[1]] = True
+        self.draw_state('clip_on', message[1])
+
+    def time_sync_feedback_on(self):
+
+        if self.current_clip and self.current_view == 'clips_view':
+            self.draw_state('clip_on', self.current_clip)
+
+    def time_sync_feedback_off(self):
+
+        if self.current_clip and self.current_view == 'clips_view':
+            self.draw_state('clip_off', self.current_clip)

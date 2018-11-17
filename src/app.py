@@ -126,6 +126,11 @@ class App:
         self.is_tick = True
         self.midi_out_interface.send([TIMING_CLOCK])
 
+        if self.tick % 24 == 1:
+            self.view.time_sync_feedback_on()
+        elif self.tick % 24 == 2:
+            self.view.time_sync_feedback_off()
+
     def stop(self):
         self.is_play = False
         self.midi_out_interface.send([SONG_STOP])
@@ -146,7 +151,7 @@ class App:
     def cc(self, message):
         pass
 
-    def set_tripplets_on_off(self):
+    def set_triplets_on_off(self):
         pass
 
     def save_clip(self, message):

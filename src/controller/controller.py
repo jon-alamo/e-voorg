@@ -1,15 +1,20 @@
 import time
+from src.interfaces.midi_interface.midi_interface import MidiInterface
 
 
 class Controller:
 
-    def __init__(self, interface, controller_map):
+    def __init__(self, interface: MidiInterface, controller_map: dict):
+
         self.interface = interface
+
         self.controller_map = controller_map
 
+        # Initial view and mode states.
         self.current_view = 'default_view'
         self.current_mode = 'default_mode'
 
+        # Time events to short/long press handling.
         self.time_events = {}
 
     def get_interaction(self):
@@ -18,7 +23,6 @@ class Controller:
             return self.get_control(input_msg)
 
     def get_control(self, message):
-        # todo: check cost of copying here partial map from controller map for every interaction
         control = self.controller_map[self.current_view][self.current_mode]
 
         for interaction_index in range(len(message)):
