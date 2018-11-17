@@ -29,7 +29,6 @@ class View:
         self.interface.enqueue(msg)
 
     def set_view(self, view):
-        print(view)
         if view == 'clips_view':
             self.view_map['clips_view_button']['color'] = colors['on']
             self.view_map['default_view_button']['color'] = colors['off']

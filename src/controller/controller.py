@@ -36,7 +36,6 @@ class Controller:
                 control = control[message[interaction_index]]
 
                 if 'waitfor' in control:
-                    print('waitfor')
                     self.time_events[control['waitfor']] = {'time': control['time'], 't0': time.time()}
                     break
 
