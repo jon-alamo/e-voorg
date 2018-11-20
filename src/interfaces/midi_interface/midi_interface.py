@@ -82,14 +82,3 @@ class MidiInterface(object):
 
     def is_empty(self):
         return self.queue == []
-
-
-if __name__ == '__main__':
-    m = MidiInterface('MPD232', 'MPD232')
-    while True:
-        msg = m.receive()
-        if msg:
-            print(msg)
-
-        m.send((153, 36, 127))
-        time.sleep(.001)

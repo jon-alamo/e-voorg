@@ -51,6 +51,7 @@ class App:
             if self.is_tick:
                 notes_to_play = self.recorder.get_quantized_notes(self.tick)
                 self.midi_out_interface.enqueue_many(notes_to_play)
+                self.view.notes_feedback(notes_to_play)
                 self.is_tick = False
 
             self.flush_buffers()
@@ -88,8 +89,10 @@ class App:
         # Keyword arguments to be passed to the method
         kwargs = control['kwargs']
 
+
         # If the fcn name passed matches with a method from this class
         if hasattr(self, functionality):
+
             # Get local reference to the method
             fcn = getattr(self, functionality)
 
@@ -115,7 +118,7 @@ class App:
                 current_tick=self.tick,
                 event_to_rec_on_tick=message,
                 channel=message[1],
-                tick_offset=1
+                tick_offset=3
             )
 
         else:
@@ -128,7 +131,7 @@ class App:
 
         if self.tick % 24 == 1:
             self.view.time_sync_feedback_on()
-        elif self.tick % 24 == 2:
+        elif self.tick % 24 == 4:
             self.view.time_sync_feedback_off()
 
     def stop(self):

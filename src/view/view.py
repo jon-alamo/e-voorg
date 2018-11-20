@@ -11,7 +11,7 @@ class View:
 
         # Interface state
         self.clips = {key: False for key in range(36, 100)}
-        self.current_clip = 0
+        self.current_clip = 36
         self.current_view = 'default_view'
         self.delete_mode = False
         self.is_rec = False
@@ -60,7 +60,7 @@ class View:
                 else:
                     self.draw_state('clip_off', clip)
 
-    def set_delete_mode_on_off(self, mode):
+    def switch_mode(self, mode):
         self.delete_mode = bool(abs(self.delete_mode - 1))
         if self.delete_mode:
             self.draw_state('delete_mode')
@@ -81,16 +81,18 @@ class View:
         else:
             self.draw_state('rec_off')
 
-    def note_on(self, message):
-        if self.current_view == 'default_view':
-            self.draw_state('note_on', message[1])
-
-    def note_off(self, message):
-        if self.current_view == 'default_view':
-            self.draw_state('note_off', message[1])
-
     def play_clip(self, message):
+
+        if self.clips[self.current_clip]:
+            self.draw_state('clip_on', self.current_clip)
+        else:
+            self.draw_state('clip_off', self.current_clip)
+
         self.current_clip = message[1]
+
+    def notes_feedback(self, notes):
+        if self.current_view == 'default_view':
+            self.interface.enqueue_many(notes)
 
     def delete_clip(self, message):
         self.clips[message[1]] = False
@@ -98,7 +100,7 @@ class View:
 
     def save_clip(self, message):
         self.clips[message[1]] = True
-        self.draw_state('clip_on', message[1])
+        self.play_clip(message)
 
     def time_sync_feedback_on(self):
 
