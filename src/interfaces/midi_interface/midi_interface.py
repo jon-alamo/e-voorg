@@ -82,3 +82,15 @@ class MidiInterface(object):
 
     def is_empty(self):
         return self.queue == []
+
+
+def get_devices():
+    midi_out = rtmidi.MidiOut()
+    midi_in = rtmidi.MidiIn()
+
+    midi_devices = {
+        'midi_out': midi_out.get_ports(),
+        'midi_in': midi_in.get_ports()
+    }
+
+    return midi_devices
