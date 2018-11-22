@@ -5,9 +5,10 @@ from src.recorder.recorder import Recorder
 from src.interfaces.midi_interface.midi_data import SONG_START, SONG_STOP, TIMING_CLOCK
 from src.midi_clock.midi_clock import MidiClock
 
+
 class App:
 
-    def __init__(self, control_interface_device, midi_interface, controller_map, viewer_map, is_external_clock=True):
+    def __init__(self, control_interface_device, midi_interface, controller_map, viewer_map):
 
         # Interfaces initialization
         self.control_interface = MidiInterface(
@@ -15,16 +16,18 @@ class App:
             control_interface_device['midi_out'],
             'control_interface'
         )
-
         self.view_interface = self.control_interface
-
         self.controller = Controller(self.control_interface, controller_map)
         self.view = View(self.view_interface, viewer_map)
 
         # Recorder
-        channels = list(range(36, 100))
-        memory_clips = list(range(36, 100))
-        self.recorder = Recorder(channels=channels, memory_clips=memory_clips, combine_channels=True)
+        self.channels = controller_map.channels
+        self.memory_clips = controller_map.memory_clips
+        self.recorder = Recorder(
+            channels=self.channels,
+            memory_clips=self.memory_clips,
+            combine_channels=True
+        )
 
         # Midi out interface
         self.midi_out_interface = MidiInterface(
@@ -41,9 +44,7 @@ class App:
         self.is_internal_play = False
         self.is_rec = False
         self.is_tick = True
-        self.is_external_clock = is_external_clock
         self.tick = 1
-        self.channels = range(36, 100)
 
     def loop(self):
 
@@ -52,7 +53,9 @@ class App:
             control_interaction = self.controller.get_interaction()
 
             if self.is_internal_play:
-                self.is_tick = self.midi_clock.get_tick()
+                tick = self.midi_clock.get_tick()
+                if tick:
+                    self.tick_event()
 
             if control_interaction:
                 # Execute function
@@ -111,6 +114,7 @@ class App:
 
     def internal_play_stop(self):
         self.is_internal_play = bool(abs(self.is_internal_play - 1))
+        self.midi_clock.is_play = self.is_internal_play
 
         if self.is_internal_play:
             self.play()
@@ -157,11 +161,13 @@ class App:
     def stop(self):
         self.is_play = False
         self.midi_out_interface.send([SONG_STOP])
+        self.view.stop()
 
     def play(self):
         self.tick = 1
         self.is_play = True
         self.midi_out_interface.send([SONG_START])
+        self.view.play()
 
     def set_rec_on_off(self):
         self.is_rec = bool(abs(self.is_rec) - 1)

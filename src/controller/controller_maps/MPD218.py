@@ -1,4 +1,7 @@
 
+channels = [channel for channel in range(36, 48)]
+channels.extend([channel for channel in range(52, 64)])
+memory_clips = [clip for clip in range(68, 80)]
 
 controller_map = {
     'waitfor': {

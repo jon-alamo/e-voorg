@@ -9,8 +9,8 @@ class View:
         self.colors = viewer_map.colors
 
         # Interface state
-        self.clips = {key: False for key in range(36, 100)}
-        self.current_clip = 36
+        self.clips = {key: False for key in viewer_map.memory_clips}
+        self.current_clip = min(self.clips.keys())
         self.current_view = 'default_view'
         self.delete_mode = False
         self.is_rec = False
@@ -80,6 +80,12 @@ class View:
         else:
             self.draw_state('rec_off')
 
+    def play(self):
+        self.draw_state('play')
+
+    def stop(self):
+        self.draw_state('stop')
+
     def play_clip(self, message):
 
         if self.clips[self.current_clip]:
@@ -103,10 +109,10 @@ class View:
 
     def time_sync_feedback_on(self):
 
-        if self.current_clip and self.current_view == 'clips_view':
+        if self.current_clip and self.view_map['clip_on'][self.current_clip]['view'] == self.current_view:
             self.draw_state('clip_on', self.current_clip)
 
     def time_sync_feedback_off(self):
 
-        if self.current_clip and self.current_view == 'clips_view':
+        if self.current_clip and self.view_map['clip_on'][self.current_clip]['view'] == self.current_view:
             self.draw_state('clip_off', self.current_clip)

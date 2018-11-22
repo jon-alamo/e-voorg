@@ -32,6 +32,7 @@ class MidiClock(object):
         if self.is_play:
 
             if self.timer() - self.t0 >= self.tick_time:
+                self.t0 = self.timer()
                 return True
 
             else:
