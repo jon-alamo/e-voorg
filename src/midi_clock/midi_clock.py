@@ -32,15 +32,13 @@ class MidiClock(object):
         if self.is_play:
 
             if self.timer() - self.t0 >= self.tick_time:
-                self.tick = self.tick % 96 + 1
-                self.t0 = self.timer()
-                return self.tick
+                return True
 
             else:
-                return 0
+                return False
 
         else:
-            return 0
+            return False
 
     def set_bpm(self, bpm):
         """

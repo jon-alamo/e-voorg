@@ -18,7 +18,7 @@ class MidiInterface(object):
         self.output_device_name = output_device_name
 
         if self.output_device_name:
-            print('self.output_device_name: {output_device_name}'.format(output_device_name=self.output_device_name))
+            # print('self.output_device_name: {output_device_name}'.format(output_device_name=self.output_device_name))
             self.midi_out = rtmidi.MidiOut()
             # I/O Midi ports to work with in this interfafe.
             self.output_port = self.search_device(self.output_device_name, self.midi_out)
@@ -26,7 +26,7 @@ class MidiInterface(object):
             self.midi_out.open_port(self.output_port)
 
         if self.input_device_name:
-            print('self.input_device_name: {input_device_name}'.format(input_device_name=self.input_device_name))
+            # print('self.input_device_name: {input_device_name}'.format(input_device_name=self.input_device_name))
             self.midi_in = rtmidi.MidiIn()
             self.input_port = self.search_device(self.input_device_name, self.midi_in)
             # Ignore types in midi_in
@@ -45,11 +45,11 @@ class MidiInterface(object):
         :return: Port id or False
         """
         available_ports = interface.get_ports()
-        print('Available midi ports: {}'.format(available_ports))
+        # print('Available midi ports: {}'.format(available_ports))
 
         for port_index in range(len(available_ports)):
             if device_name in available_ports[port_index]:
-                print(device_name)
+                # print(device_name)
                 return port_index
 
         return False
@@ -94,3 +94,13 @@ def get_devices():
     }
 
     return midi_devices
+
+
+if __name__ == '__main__':
+    m = MidiInterface('MPD218', 'MPD218')
+
+    while True:
+        msg = m.receive()
+
+        if msg:
+            print(msg)

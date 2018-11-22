@@ -4,11 +4,11 @@ from src.interfaces.midi_interface.midi_interface import MidiInterface
 
 class Controller:
 
-    def __init__(self, interface: MidiInterface, controller_map: dict):
+    def __init__(self, interface: MidiInterface, controller_map):
 
         self.interface = interface
 
-        self.controller_map = controller_map
+        self.controller_map = controller_map.controller_map
 
         # Initial view and mode states.
         self.current_view = 'default_view'
@@ -20,7 +20,8 @@ class Controller:
     def get_interaction(self):
         input_msg = self.interface.receive()
         if input_msg:
-            return self.get_control(input_msg)
+            control = self.get_control(input_msg)
+            return control
 
     def get_control(self, message):
         control = self.controller_map[self.current_view][self.current_mode]
@@ -57,9 +58,13 @@ class Controller:
             elif -1 in control:
                 return self.put_arguments(control[-1], message)
 
+            else:
+                break
+
     @staticmethod
     def put_arguments(control, message):
         if 'kwargs' not in control and 'fcn' in control:
             return {'fcn': control['fcn'], 'kwargs': {'message': message}}
 
         return control
+

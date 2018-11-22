@@ -1,24 +1,25 @@
 from src.interfaces.midi_interface.midi_interface import MidiInterface
 from src.controller.controller import Controller
-from src.controller.controller_maps.mpd232 import controller_map
 from src.view.view import View
-from src.view.view_maps.mpd232 import view_map
 from src.recorder.recorder import Recorder
 from src.interfaces.midi_interface.midi_data import SONG_START, SONG_STOP, TIMING_CLOCK
-
-import time
-
+from src.midi_clock.midi_clock import MidiClock
 
 class App:
 
-    def __init__(self, control_interface_name, midi_out_interface_name, is_external_clock=True):
+    def __init__(self, control_interface_device, midi_interface, controller_map, viewer_map, is_external_clock=True):
 
         # Interfaces initialization
-        self.control_interface = MidiInterface(control_interface_name, control_interface_name, 'control_interface')
+        self.control_interface = MidiInterface(
+            control_interface_device['midi_in'],
+            control_interface_device['midi_out'],
+            'control_interface'
+        )
+
         self.view_interface = self.control_interface
 
         self.controller = Controller(self.control_interface, controller_map)
-        self.view = View(self.view_interface, view_map)
+        self.view = View(self.view_interface, viewer_map)
 
         # Recorder
         channels = list(range(36, 100))
@@ -26,10 +27,18 @@ class App:
         self.recorder = Recorder(channels=channels, memory_clips=memory_clips, combine_channels=True)
 
         # Midi out interface
-        self.midi_out_interface = MidiInterface(None, midi_out_interface_name, 'midi_out_interface')
+        self.midi_out_interface = MidiInterface(
+            midi_interface['midi_in'],
+            midi_interface['midi_out'],
+            'midi_out_interface'
+        )
+
+        # Midi clock
+        self.midi_clock = MidiClock()
 
         # Parameters
         self.is_play = False
+        self.is_internal_play = False
         self.is_rec = False
         self.is_tick = True
         self.is_external_clock = is_external_clock
@@ -41,6 +50,9 @@ class App:
         while True:
 
             control_interaction = self.controller.get_interaction()
+
+            if self.is_internal_play:
+                self.is_tick = self.midi_clock.get_tick()
 
             if control_interaction:
                 # Execute function
@@ -89,15 +101,23 @@ class App:
         # Keyword arguments to be passed to the method
         kwargs = control['kwargs']
 
-
         # If the fcn name passed matches with a method from this class
         if hasattr(self, functionality):
-
             # Get local reference to the method
             fcn = getattr(self, functionality)
 
             # Call the method with keyword arguments
             fcn(**kwargs)
+
+    def internal_play_stop(self):
+        self.is_internal_play = bool(abs(self.is_internal_play - 1))
+
+        if self.is_internal_play:
+            self.play()
+        else:
+            self.stop()
+
+        self.midi_clock.reset()
 
     def note_on(self, message):
 
@@ -124,7 +144,7 @@ class App:
         else:
             self.midi_out_interface.enqueue(message)
 
-    def external_tick(self):
+    def tick_event(self):
         self.tick = self.tick % 96 + 1
         self.is_tick = True
         self.midi_out_interface.send([TIMING_CLOCK])
@@ -150,6 +170,9 @@ class App:
             self.recorder.is_recording = True
         else:
             self.recorder.leave_recording()
+
+    def set_bpm(self, message):
+        self.midi_clock.set_bpm(message[2])
 
     def cc(self, message):
         pass

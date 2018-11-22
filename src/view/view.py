@@ -1,13 +1,12 @@
-from src.view.view_maps.mpd232 import colors
 from src.interfaces.midi_interface.midi_interface import MidiInterface
 
 
 class View:
 
-    def __init__(self, view_interface: MidiInterface, view_map: dict):
+    def __init__(self, view_interface: MidiInterface, viewer_map):
         self.interface = view_interface
-        self.view_map = view_map
-        self.colors = colors
+        self.view_map = viewer_map.view_map
+        self.colors = viewer_map.colors
 
         # Interface state
         self.clips = {key: False for key in range(36, 100)}
