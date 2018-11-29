@@ -118,15 +118,15 @@ class Recorder:
 
     def save_preset(self, channels, clip):
         for channel in channels:
-            self.memories[clip][channel] = copy.deepcopy(self.current_loops[channel])
+            self.memories[clip][channel] = list(self.current_loops[channel])
 
     def delete_current_loop(self, channel):
-        self.current_loops[channel] = [copy.deepcopy(self.empty_bar)]
+        self.current_loops[channel] = [list(self.empty_bar)]
         self.bar_indexes[channel] = 0
 
     def play_channel_clip(self, channels, clip):
         for channel in channels:
-            self.current_loops[channel] = copy.deepcopy(self.memories[clip][channel])
+            self.current_loops[channel] = list(self.memories[clip][channel])
             self.bar_indexes[channel] = 0
 
     def play_clips_line(self, clip):
@@ -134,5 +134,5 @@ class Recorder:
 
     def delete_channel_clip(self, channels, clip):
         for channel in channels:
-            self.memories[clip][channel] = [copy.deepcopy(self.empty_bar)]
+            self.memories[clip][channel] = [list(self.empty_bar)]
             self.bar_indexes[channel] = 0

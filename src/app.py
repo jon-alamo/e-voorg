@@ -4,6 +4,7 @@ from src.view.view import View
 from src.recorder.recorder import Recorder
 from src.interfaces.midi_interface.midi_data import SONG_START, SONG_STOP, TIMING_CLOCK
 from src.midi_clock.midi_clock import MidiClock
+import time
 
 
 class App:
@@ -37,7 +38,7 @@ class App:
         )
 
         # Midi clock
-        self.midi_clock = MidiClock()
+        self.midi_clock = MidiClock(bpm=100)
 
         # Parameters
         self.is_play = False
@@ -46,13 +47,17 @@ class App:
         self.is_tick = True
         self.tick = 1
 
+        # External tick parameters
+        self.ext_tick = 1
+        self.t0_ext_tick_24 = None
+
     def loop(self):
 
         while True:
 
             control_interaction = self.controller.get_interaction()
 
-            if self.is_internal_play:
+            if self.is_play:
                 tick = self.midi_clock.get_tick()
                 if tick:
                     self.tick_event()
@@ -112,17 +117,6 @@ class App:
             # Call the method with keyword arguments
             fcn(**kwargs)
 
-    def internal_play_stop(self):
-        self.is_internal_play = bool(abs(self.is_internal_play - 1))
-        self.midi_clock.is_play = self.is_internal_play
-
-        if self.is_internal_play:
-            self.play()
-        else:
-            self.stop()
-
-        self.midi_clock.reset()
-
     def note_on(self, message):
 
         if self.is_play:
@@ -158,14 +152,25 @@ class App:
         elif self.tick % 24 == 4:
             self.view.time_sync_feedback_off()
 
+    def internal_play_stop(self):
+        self.is_play = bool(abs(self.is_play - 1))
+
+        if self.is_play:
+            self.play()
+        else:
+            self.stop()
+
     def stop(self):
         self.is_play = False
         self.midi_out_interface.send([SONG_STOP])
+        self.midi_clock.stop()
         self.view.stop()
 
     def play(self):
         self.tick = 1
+        self.ext_tick = 1
         self.is_play = True
+        self.midi_clock.start()
         self.midi_out_interface.send([SONG_START])
         self.view.play()
 
@@ -179,6 +184,20 @@ class App:
 
     def set_bpm(self, message):
         self.midi_clock.set_bpm(message[2])
+
+    def external_tick(self):
+        self.ext_tick = self.ext_tick % 96 + 1
+
+        if self.ext_tick % 24 == 1:
+            t_now = time.time()
+
+            # If previous note 4th stored, new bpm is calculated.
+            if self.t0_ext_tick_24:
+                t_24 = t_now - self.t0_ext_tick_24
+                bpm = 60. / t_24
+                self.midi_clock.set_bpm(bpm)
+
+            self.t0_ext_tick_24 = t_now
 
     def cc(self, message):
         pass

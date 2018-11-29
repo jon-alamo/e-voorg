@@ -20,7 +20,7 @@ class MidiClock(object):
 
         # Reference to functions from packages to be used
         # Cross platform accurate time measurement
-        self.timer = time.perf_counter
+        self.timer = time.time
 
     def get_tick(self):
         """

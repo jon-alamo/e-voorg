@@ -1,3 +1,5 @@
+channels = [channel for channel in range(36, 100)]
+memory_clips = [clip for clip in range(36, 100)]
 
 
 controller_map = {

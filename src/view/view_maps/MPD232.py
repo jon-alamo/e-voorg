@@ -1,3 +1,5 @@
+channels = [channel for channel in range(36, 100)]
+memory_clips = [clip for clip in range(36, 100)]
 
 colors = {
     'on': 127,
@@ -42,5 +44,7 @@ view_map = {
     },
     'triplets_button_off': {
         24: {'midi_address': 176, 'color': colors['on'], 'view': 'always'},
-    }
+    },
+    'play': {},
+    'stop': {}
 }

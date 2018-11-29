@@ -8,8 +8,8 @@ known_devices = {
     'controller': {
         'MPD232': {
             'osx': 'MPD232 Port A',
-            'linux': 'MPD232',
-            'win32': 'MPD232 MIDI 1'
+            'win32': 'MPD232 ',
+            'linux': 'MPD232 MIDI 1'
         },
         'MPD218': {
             'linux': 'MPD218',
@@ -24,9 +24,9 @@ known_devices = {
             'osx': 'UM-ONE'
         },
         'MPD232': {
-            'linux': 'MIDIOUT3',
+            'win32': 'MIDIOUT3',
             'osx': 'MPD232 MIDI',
-            'win32': 'MPD232 MIDI 3'
+            'linux': 'MPD232 MIDI 3'
         }
     }
 }
