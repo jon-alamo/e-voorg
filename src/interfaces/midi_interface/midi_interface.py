@@ -17,6 +17,9 @@ class MidiInterface(object):
         self.input_device_name = input_device_name
         self.output_device_name = output_device_name
 
+        self.midi_out = None
+        self.midi_in = None
+
         if self.output_device_name:
             # print('self.output_device_name: {output_device_name}'.format(output_device_name=self.output_device_name))
             self.midi_out = rtmidi.MidiOut()
@@ -59,9 +62,10 @@ class MidiInterface(object):
         Receive input midi messages and store them in the midi_in_buffer dictionary.
         :return: None
         """
-        message = self.midi_in.get_message()
-        if message:
-            return tuple(message[0])
+        if self.midi_in:
+            message = self.midi_in.get_message()
+            if message:
+                return tuple(message[0])
 
     def send(self, midi_message):
         """
@@ -69,16 +73,20 @@ class MidiInterface(object):
         :param midi_message: Message list to be sent like [heading, value...]
         :return: None
         """
-        message = self.midi_out.send_message(midi_message)
+        if self.midi_out:
+            message = self.midi_out.send_message(midi_message)
 
     def enqueue(self, midi_message):
-        self.queue.append(midi_message)
+        if self.midi_out:
+            self.queue.append(midi_message)
 
     def enqueue_many(self, midi_messages):
-        self.queue.extend(midi_messages)
+        if self.midi_out:
+            self.queue.extend(midi_messages)
 
     def send_first(self):
-        self.send(self.queue.pop(0))
+        if self.midi_out:
+            self.send(self.queue.pop(0))
 
     def is_empty(self):
         return self.queue == []
@@ -97,10 +105,7 @@ def get_devices():
 
 
 if __name__ == '__main__':
-    m = MidiInterface('MPD218', 'MPD218')
+    m = MidiInterface(None, None)
 
-    while True:
-        msg = m.receive()
-
-        if msg:
-            print(msg)
+    m.send((0, 0, 0))
+    print(m.receive())

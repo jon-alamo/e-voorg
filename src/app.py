@@ -4,17 +4,18 @@ from src.view.view import View
 from src.recorder.recorder import Recorder
 from src.interfaces.midi_interface.midi_data import SONG_START, SONG_STOP, TIMING_CLOCK
 from src.midi_clock.midi_clock import MidiClock
+from src.interfaces.ethernet_interface.ethernet_interface import EthernetOutputInterface
 import time
 
 
 class App:
 
-    def __init__(self, control_interface_device, midi_interface, controller_map, viewer_map):
+    def __init__(self, controller, midi_interface, controller_map, viewer_map, ethernet_port, ethernet_ip):
 
         # Interfaces initialization
         self.control_interface = MidiInterface(
-            control_interface_device['midi_in'],
-            control_interface_device['midi_out'],
+            controller['midi_in'],
+            controller['midi_out'],
             'control_interface'
         )
         self.view_interface = self.control_interface
@@ -39,6 +40,9 @@ class App:
 
         # Midi clock
         self.midi_clock = MidiClock(bpm=100)
+
+        # Midi out ethernet interface
+        self.eth_out = EthernetOutputInterface(host=ethernet_ip, port=ethernet_port)
 
         # Parameters
         self.is_play = False
@@ -70,8 +74,11 @@ class App:
 
             if self.is_tick:
                 notes_to_play = self.recorder.get_quantized_notes(self.tick)
+
                 self.midi_out_interface.enqueue_many(notes_to_play)
+                self.eth_out.enqueue_many(notes_to_play)
                 self.view.notes_feedback(notes_to_play)
+
                 self.is_tick = False
 
             self.flush_buffers()
@@ -85,12 +92,20 @@ class App:
         """
 
         # If USB midi interface has pending midi events to be released
-        if not self.midi_out_interface.is_empty():
-            self.midi_out_interface.send_first()
+        if not self.midi_out_interface.is_empty() or not self.eth_out.is_empty():
+
+            if not self.midi_out_interface.is_empty():
+                self.midi_out_interface.send_first()
+            if not self.eth_out.is_empty():
+                self.eth_out.send_first()
 
         # Otherwise, if harmony has pending midi events to be released
         elif not self.view_interface.is_empty():
             self.view_interface.send_first()
+
+        # If no messages in buffers and still margin to next tick, sleep
+        elif (self.midi_clock.tick_time - 0.005) > (self.midi_clock.timer() - self.midi_clock.t0) or not self.is_play:
+            time.sleep(0.001)
 
     def exec_control(self, control):
         """
@@ -145,6 +160,9 @@ class App:
     def tick_event(self):
         self.tick = self.tick % 96 + 1
         self.is_tick = True
+
+        # Send sync messages
+        self.eth_out.send([TIMING_CLOCK])
         self.midi_out_interface.send([TIMING_CLOCK])
 
         if self.tick % 24 == 1:
@@ -162,7 +180,10 @@ class App:
 
     def stop(self):
         self.is_play = False
+
+        self.eth_out.send([SONG_STOP])
         self.midi_out_interface.send([SONG_STOP])
+
         self.midi_clock.stop()
         self.view.stop()
 
@@ -171,7 +192,10 @@ class App:
         self.ext_tick = 1
         self.is_play = True
         self.midi_clock.start()
+
+        self.eth_out.send([SONG_START])
         self.midi_out_interface.send([SONG_START])
+
         self.view.play()
 
     def set_rec_on_off(self):
