@@ -52,32 +52,7 @@ controller_map = {
 
             },
 
-            169: {
-                36: {'fcn': 'set_note_pressure'},
-                37: {'fcn': 'set_note_pressure'},
-                38: {'fcn': 'set_note_pressure'},
-                39: {'fcn': 'set_note_pressure'},
-                40: {'fcn': 'set_note_pressure'},
-                41: {'fcn': 'set_note_pressure'},
-                42: {'fcn': 'set_note_pressure'},
-                43: {'fcn': 'set_note_pressure'},
-                44: {'fcn': 'set_note_pressure'},
-                45: {'fcn': 'set_note_pressure'},
-                46: {'fcn': 'set_note_pressure'},
-                47: {'fcn': 'set_note_pressure'},
-                52: {'fcn': 'set_note_pressure'},
-                53: {'fcn': 'set_note_pressure'},
-                54: {'fcn': 'set_note_pressure'},
-                55: {'fcn': 'set_note_pressure'},
-                56: {'fcn': 'set_note_pressure'},
-                57: {'fcn': 'set_note_pressure'},
-                58: {'fcn': 'set_note_pressure'},
-                59: {'fcn': 'set_note_pressure'},
-                60: {'fcn': 'set_note_pressure'},
-                61: {'fcn': 'set_note_pressure'},
-                62: {'fcn': 'set_note_pressure'},
-                63: {'fcn': 'set_note_pressure'}
-            },
+            217: {'fcn': 'set_channel_pressure'},
 
             137: {
                 36: {'fcn': 'note_off'},
@@ -123,10 +98,8 @@ controller_map = {
             },
 
             176: {
-                10: {
-                    0: {'fcn': 'set_bpm'}
-                }
-            }
+                10: {'fcn': 'increase_bpm'}
+            },
 
         },
         'delete_mode': {
@@ -188,10 +161,8 @@ controller_map = {
                 83: {'fcn': 'internal_play_stop', 'kwargs': {}},
             },
             176: {
-                10: {
-                    0: {'fcn': 'set_bpm'}
-                }
-            }
+                10: {'fcn': 'increase_bpm'}
+            },
         }
     }
 }

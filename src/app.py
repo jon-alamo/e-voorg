@@ -40,7 +40,7 @@ class App:
         )
 
         # Midi clock
-        self.midi_clock = MidiClock(bpm=70)
+        self.midi_clock = MidiClock(bpm=100)
 
         # Midi out ethernet interface
         self.eth_out = EthernetOutputInterface(host=ethernet_ip, port=ethernet_port)
@@ -53,6 +53,7 @@ class App:
         self.is_triplets = False
         self.pressed_notes = {}
         self.triplet_notes = {}
+        self.channel_pressure = 0
 
         self.is_rec = False
         self.is_tick = True
@@ -63,40 +64,53 @@ class App:
         self.t0_ext_tick_24 = None
 
     def loop(self):
-
+        """
+        Main loop applications, determines the execution flow of the program step by step determining in which processes
+        will be executed.
+        :return: None
+        """
         while True:
 
-            # Controller
+            # Controller's input user interactions.
             control_interaction = self.controller.get_interaction()
-            # Footswitch (keyboard)
+            # Footswitch (keyboard)'s input user interactions.
             footswitch_interaction = self.footswitch.get_interaction()
 
             if self.is_play:
+                # Get tick from internal clock or none if the current time doesn't correspond to a tick event.
                 tick = self.midi_clock.get_tick()
+
                 if tick:
+                    # Update tick values and flags, and send external sync messages.
                     self.tick_event()
 
             if control_interaction:
-                # Execute function
+                # Execute function due to input device interaction
                 self.exec_control(control_interaction)
-                # Send feedback to harmony interface
+                # Send feedback to control interface.
                 self.view.draw_feedback(control_interaction)
 
             if footswitch_interaction:
+                # Execute funtion due to footswitch interaction
                 self.exec_control(footswitch_interaction)
+                # Send feedback to control interface.
                 self.view.draw_feedback(footswitch_interaction)
 
             if self.is_tick:
+                # Execute time-synced processes
                 self.process_tick()
-
+                # Get quantized notes being played by saved loops or from real time playing.
                 notes_to_play = self.recorder.get_quantized_notes(self.tick)
-
+                # Enqueue notes to be sent to midi out interface
                 self.midi_out_interface.enqueue_many(notes_to_play)
+                # Enqueue notes to be sent to ethernet out interface
                 self.eth_out.enqueue_many(notes_to_play)
+                # Display note on/off feedback
                 self.view.notes_feedback(notes_to_play)
-
+                # Set is_tick flag to False
                 self.is_tick = False
 
+            # Flush buffers and send midi messages to corresponding out interfaces, or sleep if buffers are empty.
             self.flush_buffers()
 
     def flush_buffers(self):
@@ -119,7 +133,7 @@ class App:
         elif not self.view_interface.is_empty():
             self.view_interface.send_first()
 
-        # If no messages in buffers and still margin to next tick, sleep
+        # If no messages in buffers and still enough time to next tick, sleep to reduce process time
         elif (self.midi_clock.tick_time - 0.005) > (self.midi_clock.timer() - self.midi_clock.t0) or not self.is_play:
             time.sleep(0.001)
 
@@ -149,7 +163,14 @@ class App:
             fcn(**kwargs)
 
     def note_on(self, message):
-        self.pressed_notes[message[1]] = 100
+        """
+        Process note on event from device and sends if play is active to recorder object. Every note on is tracked in
+        self.pressed_notes parameter to be used in other places of the code.
+        :param message: Midi message with channel, note and velocity.
+        :return: None
+        """
+        self.pressed_notes[message[1]] = message
+        self.recorder.notes_to_mute[message[1]] = False
 
         if self.is_play:
             self.recorder.rec_quantized_note(
@@ -157,15 +178,21 @@ class App:
                 event_to_rec_on_tick=message,
                 channel=message[1]
             )
-            pass
 
         else:
             self.midi_out_interface.enqueue(message)
 
     def note_off(self, message):
+        """
+        Process note off event from device and sends if play is active to recorder object. Corresponding note is removed
+        from self.pressed_notes and from self.triplet_notes.
+        :param message: Midi message with channel, note and velocity.
+        :return: None
+        """
         # Remove from triplet notes
         self.pressed_notes.pop(message[1], None)
         self.triplet_notes.pop(message[1], None)
+        self.recorder.notes_to_mute.pop(message[1], None)
 
         if self.is_play:
             self.recorder.rec_quantized_note(
@@ -174,21 +201,25 @@ class App:
                 channel=message[1],
                 tick_offset=3
             )
-            pass
 
         else:
             self.midi_out_interface.enqueue(message)
 
-    # def set_note_pressure(self, message):
-    #     self.pressed_notes[message[1]] = message[2]
-
-    def get_triplets_note_on(self):
-        return [(153, note, self.triplet_notes.get(note, 80)) for note in self.triplet_notes]
-
-    def get_triplets_note_off(self):
-        return [(137, note, 0) for note in self.triplet_notes]
+    def set_channel_pressure(self, message):
+        """
+        Set pressure value coming from any note pad pressed.
+        :param message: Pressure message from device.
+        :return: None
+        """
+        self.channel_pressure = message[1]
 
     def tick_event(self):
+        """
+        This method is called every time the execution time coincides with a tick clock event. Here, the tick counter
+        is updated and self.is_tick flag set to let the execution entering corresponding processes. External devices
+        sync messages are sent from here too.
+        :return: None
+        """
         self.tick = self.tick % 96 + 1
         self.is_tick = True
 
@@ -197,45 +228,57 @@ class App:
         self.midi_out_interface.send([TIMING_CLOCK])
 
     def process_tick(self):
+        """
+        Here are performed actions sensitives to time sync, such as triplets functionality and tempo depending flickers.
+        :return: None
+        """
+
         if self.tick % 24 == 1:
             self.view.time_sync_feedback_on()
         elif self.tick % 24 == 3:
             self.view.time_sync_feedback_off()
 
         if self.is_triplets:
-
-            if self.tick % 12 > 3:
+            triplets_entry = self.tick % 12
+            if triplets_entry == 0 or triplets_entry == 10 or triplets_entry == 11 or triplets_entry == 1 or triplets_entry == 2:
                 self.triplet_notes.update(self.pressed_notes)
 
             if self.tick % 4 == 1:
-                triplet_notes = self.get_triplets_note_on()
-                for triplet_note in triplet_notes:
+                for triplet_note in self.triplet_notes:
                     self.recorder.rec_quantized_note(
                         current_tick=self.tick,
-                        event_to_rec_on_tick=triplet_note,
-                        channel=triplet_note[1],
+                        event_to_rec_on_tick=(153, triplet_note, self.channel_pressure),
+                        channel=triplet_note,
                         quantization=24
                     )
 
-            if self.tick % 4 == 2:
-                triplet_notes = self.get_triplets_note_off()
-                for triplet_note in triplet_notes:
                     self.recorder.rec_quantized_note(
                         current_tick=self.tick,
-                        event_to_rec_on_tick=triplet_note,
-                        channel=triplet_note[1],
-                        quantization=24
+                        event_to_rec_on_tick=(137, triplet_note, 0),
+                        channel=triplet_note,
+                        quantization=24,
+                        tick_offset=2
                     )
+
+        else:
+            mute_entry = self.tick % 6
 
     def internal_play_stop(self):
-        self.is_play = bool(abs(self.is_play - 1))
+        """
+        Switches play and stop modes. Function to be called by a non toggle button (momentary button).
+        :return: None
+        """
 
         if self.is_play:
-            self.play()
-        else:
             self.stop()
+        else:
+            self.play()
 
     def stop(self):
+        """
+        Stops internal play and sends corresponding midi messages through both midi and ethernet interfaces.
+        :return: None
+        """
         self.is_play = False
 
         self.eth_out.send([SONG_STOP])
@@ -245,6 +288,10 @@ class App:
         self.view.stop()
 
     def play(self):
+        """
+        Set internal play and sends corresponding midi messages through both midi and ethernet interfaces.
+        :return: None
+        """
         self.tick = 1
         self.ext_tick = 1
         self.is_play = True
@@ -256,6 +303,10 @@ class App:
         self.view.play()
 
     def set_rec_on_off(self):
+        """
+        Switches rec mode on/off. Function to be called by a non toggle button (momentary button).
+        :return: None
+        """
 
         if self.is_rec:
             self.set_rec(state='off')
@@ -263,6 +314,11 @@ class App:
             self.set_rec(state='on')
 
     def set_rec(self, state):
+        """
+        Set rec to state mode on/off and calls to corresponding recording objects methods.
+        :param state: String on/off
+        :return: None
+        """
         if state == 'on':
             self.is_rec = True
             self.recorder.is_recording = True
@@ -272,6 +328,12 @@ class App:
             self.recorder.leave_recording()
 
     def set_global_rec(self, state):
+        """
+        Set rec to state mode on/off by calling set_rec methods after sending corresponding value through ethernet to
+        perform same action on listening devics.
+        :param state: String on/off
+        :return: None
+        """
         if state == 'on':
             message = [176, 120, 127]
             self.eth_out.send(message)
@@ -282,10 +344,31 @@ class App:
 
         self.set_rec(state)
 
-    def set_bpm(self, message):
-        self.midi_clock.set_bpm(message[2])
+    def increase_bpm(self, message):
+        """
+        Transforms and applies a factor to midi CC message value and call to midi_clock.increase_bpm:
+            - Transformations:
+                Values between 64 and 127 corresponds to negative values: value - 128
+                Values between 1 and 64 corresponds to positive values: value
+            - Factor applied to all transformed values: 0.1
+
+        :param message: Midi CC message
+        :return: None
+        """
+        value = message[2]
+        if value > 64:
+            delta = (float(value) - 128) * 0.1
+        else:
+            delta = float(value) * 0.1
+
+        self.midi_clock.increase_bpm(delta)
 
     def external_tick(self):
+        """
+        If a external midi sync message is received, this method is called, so time is stored every note 4th and bpm of
+        the internal clock is recalculated, but clock is always internal.
+        :return: None
+        """
         self.ext_tick = self.ext_tick % 96 + 1
 
         if self.ext_tick % 24 == 1:
@@ -299,11 +382,26 @@ class App:
 
             self.t0_ext_tick_24 = t_now
 
-    def cc(self, message):
-        pass
-
     def set_triplets_on_off(self):
-        self.is_triplets = bool(abs(self.is_triplets - 1))
+        """
+        Switches triplets mode on/off. Function to be called by a non toggle button (momentary button).
+        :return: None
+        """
+        if self.is_triplets:
+            self.set_triplets('off')
+        else:
+            self.set_triplets('on')
+
+    def set_triplets(self, state):
+        """
+        Sets triplets mode to indicated state. When triplets is active, pressed notes will be played at 24th note,
+        :param state:
+        :return:
+        """
+        if state == 'on':
+            self.is_triplets = True
+        elif state == 'off':
+            self.is_triplets = False
 
     def save_clip(self, message):
         self.recorder.save_preset(self.channels, message[1])

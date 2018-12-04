@@ -51,6 +51,10 @@ class MidiClock(object):
             self.bpm = bpm
             self.tick_time = 2.5 / self.bpm
 
+    def increase_bpm(self, delta):
+        new_bpm = self.bpm + delta
+        self.set_bpm(new_bpm)
+
     def reset(self):
         self.tick = 0
         self.t0 = self.timer()

@@ -14,7 +14,7 @@ class View:
         self.current_view = 'default_view'
         self.delete_mode = False
         self.is_rec = False
-        self.tiplets_mode = False
+        self.is_triplets = False
 
     def draw_feedback(self, control):
 
@@ -67,10 +67,17 @@ class View:
             self.draw_state('default_mode')
 
     def set_triplets_on_off(self):
-        self.tiplets_mode = bool(abs(self.tiplets_mode - 1))
-        if self.tiplets_mode:
-            self.draw_state('triplets_button_on')
+        if self.is_triplets:
+            self.set_triplets('off')
         else:
+            self.set_triplets('on')
+
+    def set_triplets(self, state):
+        if state == 'on':
+            self.is_triplets = True
+            self.draw_state('triplets_button_on')
+        elif state == 'off':
+            self.is_triplets = False
             self.draw_state('triplets_button_off')
 
     def set_rec_on_off(self):
