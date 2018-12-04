@@ -105,7 +105,10 @@ def get_devices():
 
 
 if __name__ == '__main__':
-    m = MidiInterface(None, None)
+    m = MidiInterface('MPD218', 'MPD218')
 
-    m.send((0, 0, 0))
-    print(m.receive())
+    while True:
+        msg = m.receive()
+
+        if msg:
+            print(msg)

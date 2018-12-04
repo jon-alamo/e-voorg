@@ -10,7 +10,7 @@ class Recorder:
         self.is_leaving_recording = False
 
         # Quantization notes to tick steps table
-        self.quantization_table = {0: 0, 4: 24, 8: 12, 16: 6, 32: 3, 96: 1}
+        self.quantization_table = {0: 0, 4: 24, 8: 12, 16: 6, 24: 4, 32: 3, 96: 1}
 
         # Parameters
         self.channels = channels
@@ -99,7 +99,6 @@ class Recorder:
         next_tick_position = (self.get_quantized_tick(current_tick, quantization_ticks, 1) + tick_offset) % 96
         # Add to live playing quantized loop
         self.playing_quantized_bar[channel][next_tick_position].append(event_to_rec_on_tick)
-
 
     @staticmethod
     def get_quantized_tick(tick, quantization, offset=0.5):

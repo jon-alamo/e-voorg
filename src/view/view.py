@@ -74,10 +74,22 @@ class View:
             self.draw_state('triplets_button_off')
 
     def set_rec_on_off(self):
-        self.is_rec = bool(abs(self.is_rec - 1))
+
         if self.is_rec:
-            self.draw_state('rec_on')
+            self.set_rec('off')
         else:
+            self.set_rec('on')
+
+    def set_global_rec(self, state):
+        self.set_rec(state)
+
+    def set_rec(self, state):
+        if state == 'on':
+            self.is_rec = True
+            self.draw_state('rec_on')
+
+        elif state == 'off':
+            self.is_rec = False
             self.draw_state('rec_off')
 
     def play(self):

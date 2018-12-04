@@ -1,5 +1,6 @@
 from src.interfaces.midi_interface.midi_interface import MidiInterface
 from src.controller.controller import Controller
+from src.interfaces.footswitch_interface.footswitch_interface import FootSwitch
 from src.view.view import View
 from src.recorder.recorder import Recorder
 from src.interfaces.midi_interface.midi_data import SONG_START, SONG_STOP, TIMING_CLOCK
@@ -39,14 +40,20 @@ class App:
         )
 
         # Midi clock
-        self.midi_clock = MidiClock(bpm=100)
+        self.midi_clock = MidiClock(bpm=70)
 
         # Midi out ethernet interface
         self.eth_out = EthernetOutputInterface(host=ethernet_ip, port=ethernet_port)
 
+        # Footswitch controller
+        self.footswitch = FootSwitch()
+
         # Parameters
         self.is_play = False
-        self.is_internal_play = False
+        self.is_triplets = False
+        self.pressed_notes = {}
+        self.triplet_notes = {}
+
         self.is_rec = False
         self.is_tick = True
         self.tick = 1
@@ -59,7 +66,10 @@ class App:
 
         while True:
 
+            # Controller
             control_interaction = self.controller.get_interaction()
+            # Footswitch (keyboard)
+            footswitch_interaction = self.footswitch.get_interaction()
 
             if self.is_play:
                 tick = self.midi_clock.get_tick()
@@ -72,7 +82,13 @@ class App:
                 # Send feedback to harmony interface
                 self.view.draw_feedback(control_interaction)
 
+            if footswitch_interaction:
+                self.exec_control(footswitch_interaction)
+                self.view.draw_feedback(footswitch_interaction)
+
             if self.is_tick:
+                self.process_tick()
+
                 notes_to_play = self.recorder.get_quantized_notes(self.tick)
 
                 self.midi_out_interface.enqueue_many(notes_to_play)
@@ -133,6 +149,7 @@ class App:
             fcn(**kwargs)
 
     def note_on(self, message):
+        self.pressed_notes[message[1]] = 100
 
         if self.is_play:
             self.recorder.rec_quantized_note(
@@ -140,11 +157,15 @@ class App:
                 event_to_rec_on_tick=message,
                 channel=message[1]
             )
+            pass
 
         else:
             self.midi_out_interface.enqueue(message)
 
     def note_off(self, message):
+        # Remove from triplet notes
+        self.pressed_notes.pop(message[1], None)
+        self.triplet_notes.pop(message[1], None)
 
         if self.is_play:
             self.recorder.rec_quantized_note(
@@ -153,9 +174,19 @@ class App:
                 channel=message[1],
                 tick_offset=3
             )
+            pass
 
         else:
             self.midi_out_interface.enqueue(message)
+
+    # def set_note_pressure(self, message):
+    #     self.pressed_notes[message[1]] = message[2]
+
+    def get_triplets_note_on(self):
+        return [(153, note, self.triplet_notes.get(note, 80)) for note in self.triplet_notes]
+
+    def get_triplets_note_off(self):
+        return [(137, note, 0) for note in self.triplet_notes]
 
     def tick_event(self):
         self.tick = self.tick % 96 + 1
@@ -165,10 +196,36 @@ class App:
         self.eth_out.send([TIMING_CLOCK])
         self.midi_out_interface.send([TIMING_CLOCK])
 
+    def process_tick(self):
         if self.tick % 24 == 1:
             self.view.time_sync_feedback_on()
-        elif self.tick % 24 == 4:
+        elif self.tick % 24 == 3:
             self.view.time_sync_feedback_off()
+
+        if self.is_triplets:
+
+            if self.tick % 12 > 3:
+                self.triplet_notes.update(self.pressed_notes)
+
+            if self.tick % 4 == 1:
+                triplet_notes = self.get_triplets_note_on()
+                for triplet_note in triplet_notes:
+                    self.recorder.rec_quantized_note(
+                        current_tick=self.tick,
+                        event_to_rec_on_tick=triplet_note,
+                        channel=triplet_note[1],
+                        quantization=24
+                    )
+
+            if self.tick % 4 == 2:
+                triplet_notes = self.get_triplets_note_off()
+                for triplet_note in triplet_notes:
+                    self.recorder.rec_quantized_note(
+                        current_tick=self.tick,
+                        event_to_rec_on_tick=triplet_note,
+                        channel=triplet_note[1],
+                        quantization=24
+                    )
 
     def internal_play_stop(self):
         self.is_play = bool(abs(self.is_play - 1))
@@ -199,12 +256,31 @@ class App:
         self.view.play()
 
     def set_rec_on_off(self):
-        self.is_rec = bool(abs(self.is_rec) - 1)
 
         if self.is_rec:
-            self.recorder.is_recording = True
+            self.set_rec(state='off')
         else:
+            self.set_rec(state='on')
+
+    def set_rec(self, state):
+        if state == 'on':
+            self.is_rec = True
+            self.recorder.is_recording = True
+
+        elif state == 'off':
+            self.is_rec = False
             self.recorder.leave_recording()
+
+    def set_global_rec(self, state):
+        if state == 'on':
+            message = [176, 120, 127]
+            self.eth_out.send(message)
+
+        elif state == 'off':
+            message = [176, 120, 0]
+            self.eth_out.send(message)
+
+        self.set_rec(state)
 
     def set_bpm(self, message):
         self.midi_clock.set_bpm(message[2])
@@ -227,7 +303,7 @@ class App:
         pass
 
     def set_triplets_on_off(self):
-        pass
+        self.is_triplets = bool(abs(self.is_triplets - 1))
 
     def save_clip(self, message):
         self.recorder.save_preset(self.channels, message[1])
@@ -241,7 +317,3 @@ class App:
     def delete_note(self, message):
         self.recorder.delete_current_loop(channel=message[1])
 
-
-if __name__ == '__main__':
-    app = App('MPD232', 'MIDIOUT3')
-    app.loop()

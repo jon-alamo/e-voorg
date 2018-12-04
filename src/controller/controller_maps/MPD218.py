@@ -24,7 +24,6 @@ controller_map = {
                 45: {'fcn': 'note_on'},
                 46: {'fcn': 'note_on'},
                 47: {'fcn': 'note_on'},
-
                 52: {'fcn': 'note_on'},
                 53: {'fcn': 'note_on'},
                 54: {'fcn': 'note_on'},
@@ -51,6 +50,33 @@ controller_map = {
                 78: {'waitfor': 137, 'time': 0.5},
                 79: {'waitfor': 137, 'time': 0.5},
 
+            },
+
+            169: {
+                36: {'fcn': 'set_note_pressure'},
+                37: {'fcn': 'set_note_pressure'},
+                38: {'fcn': 'set_note_pressure'},
+                39: {'fcn': 'set_note_pressure'},
+                40: {'fcn': 'set_note_pressure'},
+                41: {'fcn': 'set_note_pressure'},
+                42: {'fcn': 'set_note_pressure'},
+                43: {'fcn': 'set_note_pressure'},
+                44: {'fcn': 'set_note_pressure'},
+                45: {'fcn': 'set_note_pressure'},
+                46: {'fcn': 'set_note_pressure'},
+                47: {'fcn': 'set_note_pressure'},
+                52: {'fcn': 'set_note_pressure'},
+                53: {'fcn': 'set_note_pressure'},
+                54: {'fcn': 'set_note_pressure'},
+                55: {'fcn': 'set_note_pressure'},
+                56: {'fcn': 'set_note_pressure'},
+                57: {'fcn': 'set_note_pressure'},
+                58: {'fcn': 'set_note_pressure'},
+                59: {'fcn': 'set_note_pressure'},
+                60: {'fcn': 'set_note_pressure'},
+                61: {'fcn': 'set_note_pressure'},
+                62: {'fcn': 'set_note_pressure'},
+                63: {'fcn': 'set_note_pressure'}
             },
 
             137: {
