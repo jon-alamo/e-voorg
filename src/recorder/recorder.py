@@ -14,7 +14,7 @@ class Recorder:
 
         # Parameters
         self.channels = channels
-        self.notes_to_mute = {}
+        self.channels_to_mute = {}
 
         self.memory_clips = memory_clips
         self.empty_bar = [[] for i in range(1, 97)]
@@ -57,16 +57,16 @@ class Recorder:
                 elif self.recording_states[channel] == 2:
                     self.recording_states[channel] = 1
 
-            # todo: check perfomance here!!!
-            # Get notes from current loop
-            notes_to_play.update(filter(lambda x: (x[1] in self.notes_to_mute and not self.notes_to_mute[x[1]]) or x[1] not in self.notes_to_mute, self.current_loops[channel][self.bar_indexes[channel]][tick - 1]))
+            if (channel in self.channels_to_mute and not self.channels_to_mute[channel]) or channel not in self.channels_to_mute:
+                # Get notes from current loop
+                notes_to_play.update(self.current_loops[channel][self.bar_indexes[channel]][tick - 1])
+
             # Get playing quantized notes
-            live_play_notes = self.playing_quantized_bar[channel][tick - 1]
-            notes_to_play.update(live_play_notes)
-            # todo: check performance here!!!
-            for note in live_play_notes:
-                if note[1] in self.notes_to_mute:
-                    self.notes_to_mute[note[1]] = True
+            live_playing_notes = self.playing_quantized_bar[channel][tick - 1]
+            notes_to_play.update(live_playing_notes)
+
+            if len(live_playing_notes) > 0 and channel in self.channels_to_mute:
+                self.channels_to_mute[channel] = True
 
             # Reset playing quantized notes
             self.playing_quantized_bar[channel][tick - 1].clear()

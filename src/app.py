@@ -169,8 +169,9 @@ class App:
         :param message: Midi message with channel, note and velocity.
         :return: None
         """
+        # todo: not compatiblewith kompo since channels are not the same in kompo and evoorg. Set index as constant.
         self.pressed_notes[message[1]] = message
-        self.recorder.notes_to_mute[message[1]] = False
+        self.recorder.channels_to_mute[message[1]] = False
 
         if self.is_play:
             self.recorder.rec_quantized_note(
@@ -192,7 +193,7 @@ class App:
         # Remove from triplet notes
         self.pressed_notes.pop(message[1], None)
         self.triplet_notes.pop(message[1], None)
-        self.recorder.notes_to_mute.pop(message[1], None)
+        self.recorder.channels_to_mute.pop(message[1], None)
 
         if self.is_play:
             self.recorder.rec_quantized_note(
