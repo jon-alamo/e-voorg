@@ -24,7 +24,6 @@ controller_map = {
                 45: {'fcn': 'note_on'},
                 46: {'fcn': 'note_on'},
                 47: {'fcn': 'note_on'},
-
                 52: {'fcn': 'note_on'},
                 53: {'fcn': 'note_on'},
                 54: {'fcn': 'note_on'},
@@ -52,6 +51,8 @@ controller_map = {
                 79: {'waitfor': 137, 'time': 0.5},
 
             },
+
+            217: {'fcn': 'set_channel_pressure'},
 
             137: {
                 36: {'fcn': 'note_off'},
@@ -97,10 +98,8 @@ controller_map = {
             },
 
             176: {
-                10: {
-                    0: {'fcn': 'set_bpm'}
-                }
-            }
+                10: {'fcn': 'increase_bpm'}
+            },
 
         },
         'delete_mode': {
@@ -162,10 +161,8 @@ controller_map = {
                 83: {'fcn': 'internal_play_stop', 'kwargs': {}},
             },
             176: {
-                10: {
-                    0: {'fcn': 'set_bpm'}
-                }
-            }
+                10: {'fcn': 'increase_bpm'}
+            },
         }
     }
 }

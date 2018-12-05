@@ -10,10 +10,11 @@ class Recorder:
         self.is_leaving_recording = False
 
         # Quantization notes to tick steps table
-        self.quantization_table = {0: 0, 4: 24, 8: 12, 16: 6, 32: 3, 96: 1}
+        self.quantization_table = {0: 0, 4: 24, 8: 12, 16: 6, 24: 4, 32: 3, 96: 1}
 
         # Parameters
         self.channels = channels
+        self.channels_to_mute = {}
 
         self.memory_clips = memory_clips
         self.empty_bar = [[] for i in range(1, 97)]
@@ -50,16 +51,23 @@ class Recorder:
 
                 elif self.recording_states[channel] == 1:
                     # New empty bar after the current one
-                    self.current_loops[channel].append(copy.deepcopy(self.empty_bar))
+                    self.current_loops[channel].append(list(self.empty_bar))
                     self.bar_indexes[channel] = len(self.current_loops[channel]) - 1
 
                 elif self.recording_states[channel] == 2:
                     self.recording_states[channel] = 1
 
-            # Get notes from current loop
-            notes_to_play.update(self.current_loops[channel][self.bar_indexes[channel]][tick - 1])
+            if (channel in self.channels_to_mute and not self.channels_to_mute[channel]) or channel not in self.channels_to_mute:
+                # Get notes from current loop
+                notes_to_play.update(self.current_loops[channel][self.bar_indexes[channel]][tick - 1])
+
             # Get playing quantized notes
-            notes_to_play.update(self.playing_quantized_bar[channel][tick - 1])
+            live_playing_notes = self.playing_quantized_bar[channel][tick - 1]
+            notes_to_play.update(live_playing_notes)
+
+            if len(live_playing_notes) > 0 and channel in self.channels_to_mute:
+                self.channels_to_mute[channel] = True
+
             # Reset playing quantized notes
             self.playing_quantized_bar[channel][tick - 1].clear()
 
@@ -76,30 +84,34 @@ class Recorder:
         :return:
         """
         quantization_ticks = self.quantization_table[quantization]
-        if not self.recording_states[channel]:
-            # If this channel have some event to be recorded
-            if self.is_recording:
-                self.recording_states[channel] = 3
-                self.current_loops[channel] = [copy.deepcopy(self.empty_bar)]
-                self.bar_indexes[channel] = 0
+        # Received note channel to be recorded is not already recording but recording state is active
+        if not self.recording_states[channel] and self.is_recording:
+            self.current_loops[channel] = [list(self.empty_bar)]
+            self.bar_indexes[channel] = 0
+
+            # If note to rec is after the last note 16th of the bar note is supposed to be at the bar beginning, so no
+            # new empty bar will be added next to the current empty one.
+            if current_tick > 91:
+                self.recording_states[channel] = 2
+            # Otherwise, if note is played before last note 16th of the bar, all previous part of the bar is considered
+            # silence and a new bar will be added if recording state continues.
+            else:
+                self.recording_states[channel] = 1
 
         # If current channel is being recorded or precount is active
         if self.recording_states[channel]:
 
-            if self.recording_states[channel] == 3:
-                # Once the first note is recorder, bar can be expanded
-                self.recording_states[channel] = 2
-
             # Get quantized tick position
             tick_position = (self.get_quantized_tick(current_tick, quantization_ticks, 1) + tick_offset) % 96
             # Save event on current position
-            self.current_loops[channel][self.bar_indexes[channel]][tick_position].append(event_to_rec_on_tick)
+            self.current_loops[channel][self.bar_indexes[channel]][tick_position] = \
+                self.current_loops[channel][self.bar_indexes[channel]][tick_position] + [event_to_rec_on_tick]
 
         # Get next tick position to live playing quantization
         next_tick_position = (self.get_quantized_tick(current_tick, quantization_ticks, 1) + tick_offset) % 96
         # Add to live playing quantized loop
-        self.playing_quantized_bar[channel][next_tick_position].append(event_to_rec_on_tick)
-
+        self.playing_quantized_bar[channel][next_tick_position] = \
+            self.playing_quantized_bar[channel][next_tick_position] + [event_to_rec_on_tick]
 
     @staticmethod
     def get_quantized_tick(tick, quantization, offset=0.5):
@@ -130,7 +142,7 @@ class Recorder:
             self.bar_indexes[channel] = 0
 
     def play_clips_line(self, clip):
-        self.current_loops = {channel: copy.deepcopy(self.memories[channel][clip]) for channel in self.channels}
+        self.current_loops = {channel: list(self.memories[clip][channel]) for channel in self.channels}
 
     def delete_channel_clip(self, channels, clip):
         for channel in channels:

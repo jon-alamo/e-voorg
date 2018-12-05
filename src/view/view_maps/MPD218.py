@@ -52,13 +52,13 @@ view_map = {
         81: {'midi_address': 153, 'color': colors['off'], 'view': 'default_view'},
     },
     'triplets_button_on': {
-        48: {'midi_address': 176, 'color': colors['on'], 'view': 'default_view'},
-        64: {'midi_address': 176, 'color': colors['on'], 'view': 'default_view'},
-        80: {'midi_address': 176, 'color': colors['on'], 'view': 'default_view'},
+        48: {'midi_address': 153, 'color': colors['on'], 'view': 'default_view'},
+        64: {'midi_address': 153, 'color': colors['on'], 'view': 'default_view'},
+        80: {'midi_address': 153, 'color': colors['on'], 'view': 'default_view'},
     },
     'triplets_button_off': {
-        48: {'midi_address': 176, 'color': colors['off'], 'view': 'default_view'},
-        64: {'midi_address': 176, 'color': colors['off'], 'view': 'default_view'},
-        80: {'midi_address': 176, 'color': colors['off'], 'view': 'default_view'},
+        48: {'midi_address': 153, 'color': colors['off'], 'view': 'default_view'},
+        64: {'midi_address': 153, 'color': colors['off'], 'view': 'default_view'},
+        80: {'midi_address': 153, 'color': colors['off'], 'view': 'default_view'},
     }
 }

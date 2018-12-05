@@ -9,3 +9,5 @@ tasks.xml
 *.iml
 modules.xml
 vcs.xml
+raspberry/
+logs/
