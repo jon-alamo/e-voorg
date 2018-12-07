@@ -141,9 +141,6 @@ class Recorder:
             self.current_loops[channel] = list(self.memories[clip][channel])
             self.bar_indexes[channel] = 0
 
-    def play_clips_line(self, clip):
-        self.current_loops = {channel: list(self.memories[clip][channel]) for channel in self.channels}
-
     def delete_channel_clip(self, channels, clip):
         for channel in channels:
             self.memories[clip][channel] = [list(self.empty_bar)]

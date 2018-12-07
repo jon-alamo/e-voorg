@@ -105,7 +105,7 @@ def get_devices():
 
 
 if __name__ == '__main__':
-    m = MidiInterface('MPD218', 'MPD218')
+    m = MidiInterface('Launchpad', 'Launchpad')
 
     while True:
         msg = m.receive()

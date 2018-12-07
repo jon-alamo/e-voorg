@@ -415,4 +415,3 @@ class App:
 
     def delete_note(self, message):
         self.recorder.delete_current_loop(channel=message[1])
-
