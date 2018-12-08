@@ -182,6 +182,7 @@ class App:
 
         else:
             self.midi_out_interface.enqueue(message)
+            self.eth_out.enqueue(message)
 
     def note_off(self, message):
         """
@@ -205,6 +206,7 @@ class App:
 
         else:
             self.midi_out_interface.enqueue(message)
+            self.eth_out.enqueue(message)
 
     def set_channel_pressure(self, message):
         """
