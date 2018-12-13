@@ -28,8 +28,7 @@ class App:
         self.memory_clips = controller_map.memory_clips
         self.recorder = Recorder(
             channels=self.channels,
-            memory_clips=self.memory_clips,
-            combine_channels=True
+            memory_clips=self.memory_clips
         )
 
         # Midi out interface
@@ -102,11 +101,12 @@ class App:
                 # Get quantized notes being played by saved loops or from real time playing.
                 notes_to_play = self.recorder.get_quantized_notes(self.tick)
                 # Enqueue notes to be sent to midi out interface
-                self.midi_out_interface.enqueue_many(notes_to_play)
-                # Enqueue notes to be sent to ethernet out interface
-                self.eth_out.enqueue_many(notes_to_play)
-                # Display note on/off feedback
-                self.view.notes_feedback(notes_to_play)
+                for channel in notes_to_play:
+                    self.midi_out_interface.enqueue_many(list(notes_to_play[channel]))
+                    # Enqueue notes to be sent to ethernet out interface
+                    self.eth_out.enqueue_many(list(notes_to_play[channel]))
+                    # Display note on/off feedback
+                    self.view.notes_feedback(list(notes_to_play[channel]))
                 # Set is_tick flag to False
                 self.is_tick = False
 

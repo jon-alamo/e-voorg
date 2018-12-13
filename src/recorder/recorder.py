@@ -79,7 +79,8 @@ class Recorder:
             # Reset playing quantized notes
             self.playing_quantized_bar[channel][tick - 1].clear()
 
-            notes_to_play[channel] = channel_notes
+            if channel_notes:
+                notes_to_play[channel] = channel_notes
 
         return notes_to_play
 

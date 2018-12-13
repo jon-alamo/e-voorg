@@ -34,6 +34,7 @@ if __name__ == '__main__':
         app.loop()
 
     except:
+        print(traceback.format_exc())
         file_name = "logs/{date}_crash".format(date=datetime.datetime.now().strftime("%Y%m%d%H%M%S"))
         f = open(file_name, 'w')
         f.write(traceback.format_exc())

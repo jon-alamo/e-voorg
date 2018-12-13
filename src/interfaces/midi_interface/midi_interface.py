@@ -52,7 +52,6 @@ class MidiInterface(object):
 
         for port_index in range(len(available_ports)):
             if device_name in available_ports[port_index]:
-                # print(device_name)
                 return port_index
 
         return False
