@@ -3,7 +3,7 @@ import copy
 
 class Recorder:
 
-    def __init__(self, channels, memory_clips, combine_channels=False):
+    def __init__(self, channels, memory_clips):
 
         # General recording
         self.is_recording = False
@@ -18,6 +18,7 @@ class Recorder:
 
         self.memory_clips = memory_clips
         self.empty_bar = [[] for i in range(1, 97)]
+        self.stop_recordings = {key: False for key in self.channels}
 
         # Playing quantized bar
         self.playing_quantized_bar = {channel: copy.deepcopy(self.empty_bar) for channel in self.channels}
@@ -34,8 +35,10 @@ class Recorder:
         # Bar indexes by channel
         self.bar_indexes = {channel: -1 for channel in self.channels}
 
+        self.next_bar_events = {channel: [] for channel in self.channels}
+
     def get_quantized_notes(self, tick):
-        notes_to_play = set()
+        notes_to_play = {}
 
         if tick == 1:
             # Leave recording at bar's beginning if leaving recording active and recording active now.
@@ -43,6 +46,7 @@ class Recorder:
                 self.stop_recording_now()
 
         for channel in self.channels:
+            channel_notes = set()
 
             if tick == 1:
                 # Reset bar
@@ -57,13 +61,17 @@ class Recorder:
                 elif self.recording_states[channel] == 2:
                     self.recording_states[channel] = 1
 
+                if self.next_bar_events[channel]:
+                    self.current_loops[channel][self.bar_indexes[channel]][0] = list(self.next_bar_events[channel])
+                    self.next_bar_events[channel] = []
+
             if (channel in self.channels_to_mute and not self.channels_to_mute[channel]) or channel not in self.channels_to_mute:
                 # Get notes from current loop
-                notes_to_play.update(self.current_loops[channel][self.bar_indexes[channel]][tick - 1])
+                channel_notes.update(self.current_loops[channel][self.bar_indexes[channel]][tick - 1])
 
             # Get playing quantized notes
             live_playing_notes = self.playing_quantized_bar[channel][tick - 1]
-            notes_to_play.update(live_playing_notes)
+            channel_notes.update(live_playing_notes)
 
             if len(live_playing_notes) > 0 and channel in self.channels_to_mute:
                 self.channels_to_mute[channel] = True
@@ -71,7 +79,9 @@ class Recorder:
             # Reset playing quantized notes
             self.playing_quantized_bar[channel][tick - 1].clear()
 
-        return list(notes_to_play)
+            notes_to_play[channel] = channel_notes
+
+        return notes_to_play
 
     def rec_quantized_note(self, current_tick, event_to_rec_on_tick, channel, quantization=16, tick_offset=0):
         """
@@ -84,6 +94,7 @@ class Recorder:
         :return:
         """
         quantization_ticks = self.quantization_table[quantization]
+
         # Received note channel to be recorded is not already recording but recording state is active
         if not self.recording_states[channel] and self.is_recording:
             self.current_loops[channel] = [list(self.empty_bar)]
@@ -103,9 +114,13 @@ class Recorder:
 
             # Get quantized tick position
             tick_position = (self.get_quantized_tick(current_tick, quantization_ticks, 1) + tick_offset) % 96
-            # Save event on current position
-            self.current_loops[channel][self.bar_indexes[channel]][tick_position] = \
-                self.current_loops[channel][self.bar_indexes[channel]][tick_position] + [event_to_rec_on_tick]
+
+            if tick_position < 90 < current_tick < 97:
+                self.next_bar_events[channel].append(event_to_rec_on_tick)
+            else:
+                # Save event on current position
+                self.current_loops[channel][self.bar_indexes[channel]][tick_position] = \
+                    self.current_loops[channel][self.bar_indexes[channel]][tick_position] + [event_to_rec_on_tick]
 
         # Get next tick position to live playing quantization
         next_tick_position = (self.get_quantized_tick(current_tick, quantization_ticks, 1) + tick_offset) % 96
@@ -117,11 +132,15 @@ class Recorder:
     def get_quantized_tick(tick, quantization, offset=0.5):
         return int(((tick - 1) + quantization * offset) / quantization) * quantization % 96
 
+    def start_recording(self):
+        self.is_leaving_recording = False
+        self.is_recording = True
+
     def leave_recording(self):
         self.is_leaving_recording = True
 
     def stop_recording_now(self):
-        self.recording_states = {key: False for key in self.channels}
+        self.recording_states = dict(self.stop_recordings)
         self.is_leaving_recording = False
         self.is_recording = False
 

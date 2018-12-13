@@ -324,7 +324,7 @@ class App:
         """
         if state == 'on':
             self.is_rec = True
-            self.recorder.is_recording = True
+            self.recorder.start_recording()
 
         elif state == 'off':
             self.is_rec = False
