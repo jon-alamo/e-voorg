@@ -1,5 +1,6 @@
 import rtmidi
 import time
+from src.interfaces.midi_interface.midi_data import NOTE_ON, NOTE_OFF
 
 
 SLEEP_AFTER_NOTE_OFF_BUFFER_FLUSH = 0.001
@@ -38,6 +39,10 @@ class MidiInterface(object):
 
         # Midi queue
         self.queue = []
+        self.channels_queue = {channel: [] for channel in range(16)}
+
+        self.notes_on = NOTE_ON
+        self.notes_off = NOTE_OFF
 
     @staticmethod
     def search_device(device_name, interface):
@@ -86,6 +91,22 @@ class MidiInterface(object):
     def send_first(self):
         if self.midi_out:
             self.send(self.queue.pop(0))
+
+    def enqueue_many_channel(self, channel, midi_messages):
+        self.channels_queue[channel].extend(midi_messages)
+
+    def send_first_channel(self, channel):
+        message = list(self.channels_queue[channel].pop(0))
+
+        if message[0] in NOTE_ON:
+            message[0] = self.notes_on[channel]
+        elif message[0] in NOTE_OFF:
+            message[0] = self.notes_off[channel]
+
+        self.send(tuple(message))
+
+    def is_channel_empty(self, channel):
+        return self.channels_queue[channel] == []
 
     def is_empty(self):
         return self.queue == []

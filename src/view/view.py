@@ -15,6 +15,7 @@ class View:
         self.delete_mode = False
         self.is_rec = False
         self.is_triplets = False
+        self.cue_state = 0
 
     def draw_feedback(self, control):
 
@@ -80,24 +81,24 @@ class View:
             self.is_triplets = False
             self.draw_state('triplets_button_off')
 
-    def set_rec_on_off(self):
+    # def set_rec_on_off(self):
+    #
+    #     if self.is_rec:
+    #         self.set_rec('off')
+    #     else:
+    #         self.set_rec('on')
+    #
+    # def set_global_rec(self, state):
+    #     self.set_rec(state)
 
-        if self.is_rec:
-            self.set_rec('off')
-        else:
-            self.set_rec('on')
-
-    def set_global_rec(self, state):
-        self.set_rec(state)
-
-    def set_rec(self, state):
-        if state == 'on':
-            self.is_rec = True
-            self.draw_state('rec_on')
-
-        elif state == 'off':
-            self.is_rec = False
-            self.draw_state('rec_off')
+    # def set_rec(self, state):
+    #     if state == 'on':
+    #         self.is_rec = True
+    #         self.draw_state('rec_on')
+    #
+    #     elif state == 'off':
+    #         self.is_rec = False
+    #         self.draw_state('rec_off')
 
     def play(self):
         self.draw_state('play')
@@ -135,3 +136,18 @@ class View:
 
         if self.current_clip and self.view_map['clip_on'][self.current_clip]['view'] == self.current_view:
             self.draw_state('clip_off', self.current_clip)
+
+    def note_8th_sync_feedback_on(self):
+        if self.cue_state == 1:
+            self.draw_state('cue_button_on')
+
+    def note_16th_sync_feedback_off(self):
+        if self.cue_state == 1:
+            self.draw_state('cue_button_off')
+
+    def set_cue_state(self, state):
+        self.cue_state = state
+        if state:
+            self.draw_state('cue_button_on')
+        else:
+            self.draw_state('cue_button_off')

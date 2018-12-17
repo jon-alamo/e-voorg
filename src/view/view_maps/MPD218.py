@@ -31,16 +31,16 @@ view_map = {
         67: {'midi_address': 153, 'color': colors['off'], 'view': 'default_view'},
         83: {'midi_address': 153, 'color': colors['off'], 'view': 'default_view'},
     },
-    'rec_on': {
-        50: {'midi_address': 153, 'color': colors['on'], 'view': 'default_view'},
-        66: {'midi_address': 153, 'color': colors['on'], 'view': 'default_view'},
-        82: {'midi_address': 153, 'color': colors['on'], 'view': 'default_view'},
-    },
-    'rec_off': {
-        50: {'midi_address': 153, 'color': colors['off'], 'view': 'default_view'},
-        66: {'midi_address': 153, 'color': colors['off'], 'view': 'default_view'},
-        82: {'midi_address': 153, 'color': colors['off'], 'view': 'default_view'},
-    },
+    # 'rec_on': {
+    #     50: {'midi_address': 153, 'color': colors['on'], 'view': 'default_view'},
+    #     66: {'midi_address': 153, 'color': colors['on'], 'view': 'default_view'},
+    #     82: {'midi_address': 153, 'color': colors['on'], 'view': 'default_view'},
+    # },
+    # 'rec_off': {
+    #     50: {'midi_address': 153, 'color': colors['off'], 'view': 'default_view'},
+    #     66: {'midi_address': 153, 'color': colors['off'], 'view': 'default_view'},
+    #     82: {'midi_address': 153, 'color': colors['off'], 'view': 'default_view'},
+    # },
     'delete_mode': {
         49: {'midi_address': 153, 'color': colors['on'], 'view': 'default_view'},
         65: {'midi_address': 153, 'color': colors['on'], 'view': 'default_view'},
@@ -60,5 +60,15 @@ view_map = {
         48: {'midi_address': 153, 'color': colors['off'], 'view': 'default_view'},
         64: {'midi_address': 153, 'color': colors['off'], 'view': 'default_view'},
         80: {'midi_address': 153, 'color': colors['off'], 'view': 'default_view'},
+    },
+    'cue_button_on': {
+        50: {'midi_address': 153, 'color': colors['on'], 'view': 'default_view'},
+        66: {'midi_address': 153, 'color': colors['on'], 'view': 'default_view'},
+        82: {'midi_address': 153, 'color': colors['on'], 'view': 'default_view'},
+    },
+    'cue_button_off': {
+        50: {'midi_address': 153, 'color': colors['off'], 'view': 'default_view'},
+        66: {'midi_address': 153, 'color': colors['off'], 'view': 'default_view'},
+        82: {'midi_address': 153, 'color': colors['off'], 'view': 'default_view'},
     }
 }

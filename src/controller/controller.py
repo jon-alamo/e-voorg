@@ -24,25 +24,23 @@ class Controller:
             return control
 
     def get_control(self, message):
+
+        time_event = self.check_time_events(message)
+
+        if time_event:
+            return time_event
+
         control = self.controller_map[self.current_view][self.current_mode]
 
         for interaction_index in range(len(message)):
-
-            if self.time_events and message[interaction_index] in self.time_events:
-                time_event = self.time_events.pop(message[interaction_index])
-
-                if time.time() - time_event['t0'] > time_event['time']:
-                    return self.put_arguments(self.controller_map['waitfor'][message[interaction_index]]['long'], message)
-                else:
-                    return self.put_arguments(self.controller_map['waitfor'][message[interaction_index]]['short'], message)
 
             # If interaction has functionality
             if message[interaction_index] in control:
                 control = control[message[interaction_index]]
 
-                if 'waitfor' in control:
-                    self.time_events[control['waitfor']] = {'time': control['time'], 't0': time.time()}
-                    break
+                if 'set_waitfor_trigger' in control:
+                    control['time'] = time.time()
+                    self.time_events[control['set_waitfor_trigger']] = control
 
                 if 'fcn' in control and control['fcn'] == 'set_view':
                     self.current_view = control['kwargs']['view']
@@ -68,3 +66,16 @@ class Controller:
 
         return control
 
+    def check_time_events(self, message):
+        time_event = self.time_events.pop(tuple(message), {})
+
+        if time_event:
+            t_now = time.time()
+            elapsed = t_now - time_event['time']
+
+            if elapsed > time_event['wait_time']:
+                return self.put_arguments(time_event['long'], message)
+            else:
+                return self.put_arguments(time_event['short'], message)
+
+        return None

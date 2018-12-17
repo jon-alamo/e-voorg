@@ -99,14 +99,27 @@ class App:
                 # Execute time-synced processes
                 self.process_tick()
                 # Get quantized notes being played by saved loops or from real time playing.
-                notes_to_play = self.recorder.get_quantized_notes(self.tick)
+                notes_to_play, cue_notes_to_play = self.recorder.get_quantized_notes(self.tick)
+
                 # Enqueue notes to be sent to midi out interface
                 for channel in notes_to_play:
                     self.midi_out_interface.enqueue_many(list(notes_to_play[channel]))
                     # Enqueue notes to be sent to ethernet out interface
                     self.eth_out.enqueue_many(list(notes_to_play[channel]))
-                    # Display note on/off feedback
-                    self.view.notes_feedback(list(notes_to_play[channel]))
+
+                    if self.recorder.is_cue != 2:
+                        # Display note on/off feedback
+                        self.view.notes_feedback(list(notes_to_play[channel]))
+
+                for channel in cue_notes_to_play:
+                    self.midi_out_interface.enqueue_many_channel(10, list(cue_notes_to_play[channel]))
+                    # Enqueue notes to be sent to ethernet out interface
+                    self.eth_out.enqueue_many_channel(10, list(cue_notes_to_play[channel]))
+
+                    if self.recorder.is_cue == 2:
+                        # Display note on/off feedback
+                        self.view.notes_feedback(list(cue_notes_to_play[channel]))
+
                 # Set is_tick flag to False
                 self.is_tick = False
 
@@ -122,12 +135,16 @@ class App:
         """
 
         # If USB midi interface has pending midi events to be released
-        if not self.midi_out_interface.is_empty() or not self.eth_out.is_empty():
+        if not self.midi_out_interface.is_empty() or not self.eth_out.is_empty() or not self.midi_out_interface.is_channel_empty(10) or not self.eth_out.is_channel_empty(10):
 
             if not self.midi_out_interface.is_empty():
                 self.midi_out_interface.send_first()
             if not self.eth_out.is_empty():
                 self.eth_out.send_first()
+            if not self.midi_out_interface.is_channel_empty(10):
+                self.midi_out_interface.send_first_channel(10)
+            if not self.eth_out.is_channel_empty(10):
+                self.eth_out.send_first_channel(10)
 
         # Otherwise, if harmony has pending midi events to be released
         elif not self.view_interface.is_empty():
@@ -240,6 +257,11 @@ class App:
             self.view.time_sync_feedback_on()
         elif self.tick % 24 == 3:
             self.view.time_sync_feedback_off()
+
+        if self.tick % 6 == 1:
+            self.view.note_8th_sync_feedback_on()
+        elif self.tick % 6 == 2:
+            self.view.note_16th_sync_feedback_off()
 
         if self.is_triplets:
             triplets_entry = self.tick % 12
@@ -417,3 +439,11 @@ class App:
 
     def delete_note(self, message):
         self.recorder.delete_current_loop(channel=message[1])
+
+    def change_cue_loop_status(self, message):
+        self.recorder.change_cue_loop_status()
+        self.view.set_cue_state(self.recorder.is_cue)
+
+    def remove_cue_loop(self, message):
+        self.recorder.remove_cue_loop()
+        self.view.set_cue_state(self.recorder.is_cue)

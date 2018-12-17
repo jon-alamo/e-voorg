@@ -3,9 +3,6 @@ channels.extend(list(range(52, 64)))
 memory_clips = [clip for clip in range(68, 80)]
 
 controller_map = {
-    'waitfor': {
-        137: {'long': {'fcn': 'save_clip'}, 'short': {'fcn': 'play_clip'}}
-    },
 
     'default_view': {
 
@@ -36,18 +33,25 @@ controller_map = {
                 62: {'fcn': 'note_on'},
                 63: {'fcn': 'note_on'},
 
-                68: {'waitfor': 137, 'time': 0.5},
-                69: {'waitfor': 137, 'time': 0.5},
-                70: {'waitfor': 137, 'time': 0.5},
-                71: {'waitfor': 137, 'time': 0.5},
-                72: {'waitfor': 137, 'time': 0.5},
-                73: {'waitfor': 137, 'time': 0.5},
-                74: {'waitfor': 137, 'time': 0.5},
-                75: {'waitfor': 137, 'time': 0.5},
-                76: {'waitfor': 137, 'time': 0.5},
-                77: {'waitfor': 137, 'time': 0.5},
-                78: {'waitfor': 137, 'time': 0.5},
-                79: {'waitfor': 137, 'time': 0.5},
+                68: {'set_waitfor_trigger': (137, 68, 0), 'wait_time': 0.5, 'time': None, 'long': {'fcn': 'save_clip'}, 'short': {'fcn': 'play_clip'}},
+                69: {'set_waitfor_trigger': (137, 69, 0), 'wait_time': 0.5, 'time': None, 'long': {'fcn': 'save_clip'}, 'short': {'fcn': 'play_clip'}},
+                70: {'set_waitfor_trigger': (137, 70, 0), 'wait_time': 0.5, 'time': None, 'long': {'fcn': 'save_clip'}, 'short': {'fcn': 'play_clip'}},
+                71: {'set_waitfor_trigger': (137, 71, 0), 'wait_time': 0.5, 'time': None, 'long': {'fcn': 'save_clip'}, 'short': {'fcn': 'play_clip'}},
+                72: {'set_waitfor_trigger': (137, 72, 0), 'wait_time': 0.5, 'time': None, 'long': {'fcn': 'save_clip'}, 'short': {'fcn': 'play_clip'}},
+                73: {'set_waitfor_trigger': (137, 73, 0), 'wait_time': 0.5, 'time': None, 'long': {'fcn': 'save_clip'}, 'short': {'fcn': 'play_clip'}},
+                74: {'set_waitfor_trigger': (137, 74, 0), 'wait_time': 0.5, 'time': None, 'long': {'fcn': 'save_clip'}, 'short': {'fcn': 'play_clip'}},
+                75: {'set_waitfor_trigger': (137, 75, 0), 'wait_time': 0.5, 'time': None, 'long': {'fcn': 'save_clip'}, 'short': {'fcn': 'play_clip'}},
+                76: {'set_waitfor_trigger': (137, 76, 0), 'wait_time': 0.5, 'time': None, 'long': {'fcn': 'save_clip'}, 'short': {'fcn': 'play_clip'}},
+                77: {'set_waitfor_trigger': (137, 77, 0), 'wait_time': 0.5, 'time': None, 'long': {'fcn': 'save_clip'}, 'short': {'fcn': 'play_clip'}},
+                78: {'set_waitfor_trigger': (137, 78, 0), 'wait_time': 0.5, 'time': None, 'long': {'fcn': 'save_clip'}, 'short': {'fcn': 'play_clip'}},
+                79: {'set_waitfor_trigger': (137, 79, 0), 'wait_time': 0.5, 'time': None, 'long': {'fcn': 'save_clip'}, 'short': {'fcn': 'play_clip'}},
+
+                50: {'set_waitfor_trigger': (137, 50, 0), 'wait_time': 0.5, 'time': None,
+                     'short': {'fcn': 'change_cue_loop_status'}, 'long': {'fcn': 'remove_cue_loop'}},
+                66: {'set_waitfor_trigger': (137, 66, 0), 'wait_time': 0.5, 'time': None,
+                     'short': {'fcn': 'change_cue_loop_status'}, 'long': {'fcn': 'remove_cue_loop'}},
+                82: {'set_waitfor_trigger': (137, 82, 0), 'wait_time': 0.5, 'time': None,
+                     'short': {'fcn': 'change_cue_loop_status'}, 'long': {'fcn': 'remove_cue_loop'}},
 
             },
 
@@ -81,17 +85,14 @@ controller_map = {
 
                 48: {'fcn': 'set_triplets_on_off', 'kwargs': {}},
                 49: {'fcn': 'switch_mode', 'kwargs': {'mode': 'delete_mode'}},
-                50: {'fcn': 'set_rec_on_off', 'kwargs': {}},
                 51: {'fcn': 'internal_play_stop', 'kwargs': {}},
 
                 64: {'fcn': 'set_triplets_on_off', 'kwargs': {}},
                 65: {'fcn': 'switch_mode', 'kwargs': {'mode': 'delete_mode'}},
-                66: {'fcn': 'set_rec_on_off', 'kwargs': {}},
                 67: {'fcn': 'internal_play_stop', 'kwargs': {}},
 
                 80: {'fcn': 'set_triplets_on_off', 'kwargs': {}},
                 81: {'fcn': 'switch_mode', 'kwargs': {'mode': 'delete_mode'}},
-                82: {'fcn': 'set_rec_on_off', 'kwargs': {}},
                 83: {'fcn': 'internal_play_stop', 'kwargs': {}},
 
             },
@@ -142,21 +143,23 @@ controller_map = {
                 78: {'fcn': 'delete_clip'},
                 79: {'fcn': 'delete_clip'},
 
+                50: {'set_waitfor_trigger': (137, 50, 0), 'wait_time': 0.5, 'time': None,
+                     'long': {'fcn': 'change_cue_loop_status'}, 'short': {'fcn': 'remove_cue_loop'}},
+                66: {'set_waitfor_trigger': (137, 66, 0), 'wait_time': 0.5, 'time': None,
+                     'long': {'fcn': 'change_cue_loop_status'}, 'short': {'fcn': 'remove_cue_loop'}},
+                82: {'set_waitfor_trigger': (137, 82, 0), 'wait_time': 0.5, 'time': None,
+                     'long': {'fcn': 'change_cue_loop_status'}, 'short': {'fcn': 'remove_cue_loop'}},
+
             },
             137: {
                 48: {'fcn': 'set_triplets_on_off', 'kwargs': {}},
-                49: {'fcn': 'switch_mode', 'kwargs': {'mode': 'default_mode'}},
-                50: {'fcn': 'set_rec_on_off', 'kwargs': {}},
+                49: {'fcn': 'switch_mode', 'kwargs': {'mode': 'default_mode', }},
                 51: {'fcn': 'internal_play_stop', 'kwargs': {}},
-
                 64: {'fcn': 'set_triplets_on_off', 'kwargs': {}},
                 65: {'fcn': 'switch_mode', 'kwargs': {'mode': 'default_mode'}},
-                66: {'fcn': 'set_rec_on_off', 'kwargs': {}},
                 67: {'fcn': 'internal_play_stop', 'kwargs': {}},
-
                 80: {'fcn': 'set_triplets_on_off', 'kwargs': {}},
                 81: {'fcn': 'switch_mode', 'kwargs': {'mode': 'default_mode'}},
-                82: {'fcn': 'set_rec_on_off', 'kwargs': {}},
                 83: {'fcn': 'internal_play_stop', 'kwargs': {}},
             },
             176: {

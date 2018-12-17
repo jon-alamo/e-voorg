@@ -25,6 +25,7 @@ class Recorder:
 
         # Current loop with empty bar by channel
         self.current_loops = {channel: [copy.deepcopy(self.empty_bar)] for channel in self.channels}
+        self.cue_current_loops = {channel: [copy.deepcopy(self.empty_bar)] for channel in self.channels}
 
         # Memory loops
         self.memories = {clip: {channel: [copy.deepcopy(self.empty_bar)] for channel in self.channels} for clip in self.memory_clips}
@@ -34,11 +35,15 @@ class Recorder:
 
         # Bar indexes by channel
         self.bar_indexes = {channel: -1 for channel in self.channels}
+        self.cue_bar_indexes = {channel: -1 for channel in self.channels}
 
         self.next_bar_events = {channel: [] for channel in self.channels}
 
+        self.is_cue = 0
+
     def get_quantized_notes(self, tick):
         notes_to_play = {}
+        cue_notes_to_play = {}
 
         if tick == 1:
             # Leave recording at bar's beginning if leaving recording active and recording active now.
@@ -47,31 +52,50 @@ class Recorder:
 
         for channel in self.channels:
             channel_notes = set()
+            cue_channel_notes = set()
 
             if tick == 1:
                 # Reset bar
                 if not self.recording_states[channel]:
-                    self.bar_indexes[channel] = (self.bar_indexes[channel] + 1) % len(self.current_loops[channel])
+
+                    if self.is_cue != 2:
+                        self.bar_indexes[channel] = (self.bar_indexes[channel] + 1) % len(self.current_loops[channel])
+                    else:
+                        self.cue_bar_indexes[channel] = (self.cue_bar_indexes[channel] + 1) % len(self.cue_current_loops[channel])
 
                 elif self.recording_states[channel] == 1:
                     # New empty bar after the current one
-                    self.current_loops[channel].append(list(self.empty_bar))
-                    self.bar_indexes[channel] = len(self.current_loops[channel]) - 1
+                    if self.is_cue != 2:
+                        self.current_loops[channel].append(list(self.empty_bar))
+                        self.bar_indexes[channel] = len(self.current_loops[channel]) - 1
+                    else:
+                        self.cue_current_loops[channel].append(list(self.empty_bar))
+                        self.cue_bar_indexes[channel] = len(self.cue_current_loops[channel]) - 1
 
                 elif self.recording_states[channel] == 2:
                     self.recording_states[channel] = 1
 
                 if self.next_bar_events[channel]:
-                    self.current_loops[channel][self.bar_indexes[channel]][0] = list(self.next_bar_events[channel])
+                    if self.is_cue != 2:
+                        self.current_loops[channel][self.bar_indexes[channel]][0] = list(self.next_bar_events[channel])
+                    else:
+                        self.cue_current_loops[channel][self.cue_bar_indexes[channel]][0] = list(self.next_bar_events[channel])
                     self.next_bar_events[channel] = []
 
             if (channel in self.channels_to_mute and not self.channels_to_mute[channel]) or channel not in self.channels_to_mute:
+
                 # Get notes from current loop
                 channel_notes.update(self.current_loops[channel][self.bar_indexes[channel]][tick - 1])
+                # Get notes from current loop
+                cue_channel_notes.update(self.cue_current_loops[channel][self.cue_bar_indexes[channel]][tick - 1])
 
             # Get playing quantized notes
             live_playing_notes = self.playing_quantized_bar[channel][tick - 1]
-            channel_notes.update(live_playing_notes)
+
+            if self.is_cue != 2:
+                channel_notes.update(live_playing_notes)
+            else:
+                cue_channel_notes.update(live_playing_notes)
 
             if len(live_playing_notes) > 0 and channel in self.channels_to_mute:
                 self.channels_to_mute[channel] = True
@@ -81,8 +105,10 @@ class Recorder:
 
             if channel_notes:
                 notes_to_play[channel] = channel_notes
+            if cue_channel_notes:
+                cue_notes_to_play[channel] = cue_channel_notes
 
-        return notes_to_play
+        return notes_to_play, cue_notes_to_play
 
     def rec_quantized_note(self, current_tick, event_to_rec_on_tick, channel, quantization=16, tick_offset=0):
         """
@@ -98,8 +124,12 @@ class Recorder:
 
         # Received note channel to be recorded is not already recording but recording state is active
         if not self.recording_states[channel] and self.is_recording:
-            self.current_loops[channel] = [list(self.empty_bar)]
-            self.bar_indexes[channel] = 0
+            if self.is_cue != 2:
+                self.current_loops[channel] = [list(self.empty_bar)]
+                self.bar_indexes[channel] = 0
+            else:
+                self.cue_current_loops[channel] = [list(self.empty_bar)]
+                self.cue_bar_indexes[channel] = 0
 
             # If note to rec is after the last note 16th of the bar note is supposed to be at the bar beginning, so no
             # new empty bar will be added next to the current empty one.
@@ -119,12 +149,18 @@ class Recorder:
             if tick_position < 90 < current_tick < 97:
                 self.next_bar_events[channel].append(event_to_rec_on_tick)
             else:
-                # Save event on current position
-                self.current_loops[channel][self.bar_indexes[channel]][tick_position] = \
-                    self.current_loops[channel][self.bar_indexes[channel]][tick_position] + [event_to_rec_on_tick]
+                if self.is_cue != 2:
+                    # Save event on current position
+                    self.current_loops[channel][self.bar_indexes[channel]][tick_position] = \
+                        self.current_loops[channel][self.bar_indexes[channel]][tick_position] + [event_to_rec_on_tick]
+                else:
+                    # Save event on current position
+                    self.cue_current_loops[channel][self.cue_bar_indexes[channel]][tick_position] = \
+                        self.cue_current_loops[channel][self.cue_bar_indexes[channel]][tick_position] + [event_to_rec_on_tick]
 
         # Get next tick position to live playing quantization
         next_tick_position = (self.get_quantized_tick(current_tick, quantization_ticks, 1) + tick_offset) % 96
+
         # Add to live playing quantized loop
         self.playing_quantized_bar[channel][next_tick_position] = \
             self.playing_quantized_bar[channel][next_tick_position] + [event_to_rec_on_tick]
@@ -153,8 +189,12 @@ class Recorder:
             self.memories[clip][channel] = list(self.current_loops[channel])
 
     def delete_current_loop(self, channel):
-        self.current_loops[channel] = [list(self.empty_bar)]
-        self.bar_indexes[channel] = 0
+        if self.is_cue != 2:
+            self.current_loops[channel] = [list(self.empty_bar)]
+            self.bar_indexes[channel] = 0
+        else:
+            self.cue_current_loops[channel] = [list(self.empty_bar)]
+            self.cue_bar_indexes[channel] = 0
 
     def play_channel_clip(self, channels, clip):
         for channel in channels:
@@ -165,3 +205,23 @@ class Recorder:
         for channel in channels:
             self.memories[clip][channel] = [list(self.empty_bar)]
             self.bar_indexes[channel] = 0
+
+    def change_cue_loop_status(self):
+
+        if self.is_cue == 2:
+            self.is_cue = 1
+
+        elif self.is_cue == 1:
+            for channel in self.channels:
+                self.current_loops[channel] = list(self.cue_current_loops[channel])
+                self.bar_indexes[channel] = self.cue_bar_indexes[channel]
+                self.is_cue = 0
+
+        elif self.is_cue == 0:
+            for channel in self.channels:
+                self.cue_current_loops[channel] = list(self.current_loops[channel])
+                self.cue_bar_indexes[channel] = self.bar_indexes[channel]
+                self.is_cue = 2
+
+    def remove_cue_loop(self):
+        self.is_cue = 0

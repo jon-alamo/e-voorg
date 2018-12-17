@@ -3,9 +3,6 @@ memory_clips = [clip for clip in range(36, 100)]
 
 
 controller_map = {
-    'waitfor': {
-        137: {'long': {'fcn': 'save_clip'}, 'short': {'fcn': 'play_clip'}}
-    },
 
     'default_view': {
 
@@ -27,6 +24,10 @@ controller_map = {
                 24: {
                     0: {'fcn': 'set_tripplets_on_off', 'kwargs': {}}
                 },
+                25: {
+                    127: {'set_waitfor_trigger': (176, 25, 0), 'wait_time': 0.5, 'time': None,
+                     'short': {'fcn': 'change_cue_loop_status'}, 'long': {'fcn': 'remove_cue_loop'}},
+                },
                 117: {
                     127: {'fcn': 'stop', 'kwargs': {}}
                 },
@@ -36,6 +37,7 @@ controller_map = {
                 119: {
                     127: {'fcn': 'set_rec_on_off', 'kwargs': {}}
                 },
+
                 28: {
                     0: {'fcn': 'set_rec_on_off', 'kwargs': {}}
                 },
@@ -61,6 +63,10 @@ controller_map = {
                 24: {
                     0: {'fcn': 'set_tripplets_on_off', 'kwargs': {}}
                 },
+                25: {
+                    127: {'set_waitfor_trigger': (176, 25, 0), 'wait_time': 0.5, 'time': None,
+                          'short': {'fcn': 'change_cue_loop_status'}, 'long': {'fcn': 'remove_cue_loop'}},
+                },
                 117: {
                     127: {'fcn': 'stop', 'kwargs': {}}
                 },
@@ -76,8 +82,9 @@ controller_map = {
 
         'default_mode': {
             248: {'fcn': 'external_tick', 'kwargs': {}},
-            153: {'waitfor': 137, 'time': 0.5},
-
+            153: {
+                channel: {'set_waitfor_trigger': (137, channel, 0), 'wait_time': 0.5, 'time': None, 'long': {'fcn': 'save_clip'}, 'short': {'fcn': 'play_clip'}} for channel in channels,
+            },
             176: {
                 21: {
                     0: {'fcn': 'set_view', 'kwargs': {'view': 'default_view'}}
@@ -90,6 +97,10 @@ controller_map = {
                 },
                 24: {
                     0: {'fcn': 'set_tripplets_on_off', 'kwargs': {}}
+                },
+                25: {
+                    127: {'set_waitfor_trigger': (176, 25, 0), 'wait_time': 0.5, 'time': None,
+                          'short': {'fcn': 'change_cue_loop_status'}, 'long': {'fcn': 'remove_cue_loop'}},
                 },
                 117: {
                     127: {'fcn': 'stop', 'kwargs': {}}
@@ -123,6 +134,10 @@ controller_map = {
                 },
                 24: {
                     0: {'fcn': 'set_tripplets_on_off', 'kwargs': {}}
+                },
+                25: {
+                    127: {'set_waitfor_trigger': (176, 25, 0), 'wait_time': 0.5, 'time': None,
+                          'short': {'fcn': 'change_cue_loop_status'}, 'long': {'fcn': 'remove_cue_loop'}},
                 },
                 117: {
                     127: {'fcn': 'stop', 'kwargs': {}}
