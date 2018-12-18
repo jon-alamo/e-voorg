@@ -57,11 +57,10 @@ class Recorder:
             if tick == 1:
                 # Reset bar
                 if not self.recording_states[channel]:
-
-                    if self.is_cue != 2:
-                        self.bar_indexes[channel] = (self.bar_indexes[channel] + 1) % len(self.current_loops[channel])
-                    else:
-                        self.cue_bar_indexes[channel] = (self.cue_bar_indexes[channel] + 1) % len(self.cue_current_loops[channel])
+                    # if self.is_cue != 2:
+                    self.bar_indexes[channel] = (self.bar_indexes[channel] + 1) % len(self.current_loops[channel])
+                    # else:
+                    self.cue_bar_indexes[channel] = (self.cue_bar_indexes[channel] + 1) % len(self.cue_current_loops[channel])
 
                 elif self.recording_states[channel] == 1:
                     # New empty bar after the current one
