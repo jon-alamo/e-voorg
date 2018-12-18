@@ -83,7 +83,7 @@ controller_map = {
         'default_mode': {
             248: {'fcn': 'external_tick', 'kwargs': {}},
             153: {
-                channel: {'set_waitfor_trigger': (137, channel, 0), 'wait_time': 0.5, 'time': None, 'long': {'fcn': 'save_clip'}, 'short': {'fcn': 'play_clip'}} for channel in channels,
+                channel: {'set_waitfor_trigger': (137, channel, 0), 'wait_time': 0.5, 'time': None, 'long': {'fcn': 'save_clip'}, 'short': {'fcn': 'play_clip'}} for channel in channels
             },
             176: {
                 21: {

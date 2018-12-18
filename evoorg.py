@@ -1,10 +1,13 @@
 from src.app import App
+from src.interfaces.midi_interface.midi_interface import get_devices
 from config.auto_config import get_current_platform, get_midi_io_ports, get_python_module
 from config.config_data import KNOWN_PLATFORMS, KNOWN_DEVICES, CONTROLLER_ROUTE, VIEWER_ROUTE, ETHERNET_PORT, ETHERNET_IP
 import traceback
 import datetime
 
 if __name__ == '__main__':
+
+    print(get_devices())
 
     # Operative System
     platform = get_current_platform(KNOWN_PLATFORMS)
