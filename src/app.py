@@ -381,6 +381,7 @@ class App:
         :param message: Midi CC message
         :return: None
         """
+
         value = message[2]
         if value > 64:
             delta = (float(value) - 128) * 0.1
@@ -389,26 +390,28 @@ class App:
 
         self.midi_clock.increase_bpm(delta)
 
-    def external_tick(self):
-        """
-        If a external midi sync message is received, this method is called, so time is stored every note 4th and bpm of
-        the internal clock is recalculated, but clock is always internal.
-        :return: None
-        """
-
-        if not self.is_hold_tempo:
-            self.ext_tick = self.ext_tick % 96 + 1
-
-            if self.ext_tick % 24 == 1:
-                t_now = time.time()
-
-                # If previous note 4th stored, new bpm is calculated.
-                if self.t0_ext_tick_24:
-                    t_24 = t_now - self.t0_ext_tick_24
-                    bpm = 60. / t_24
-                    self.midi_clock.set_bpm(bpm)
-
-                self.t0_ext_tick_24 = t_now
+    # def external_tick(self):
+    #     """
+    #     If a external midi sync message is received, this method is called, so time is stored every note 4th and bpm of
+    #     the internal clock is recalculated, but clock is always internal.
+    #     :return: None
+    #     """
+    #
+    #     self.ext_tick = self.ext_tick % 96 + 1
+    #
+    #     if not self.is_hold_tempo:
+    #
+    #         if self.ext_tick % 24 == 1:
+    #             t_now = time.time()
+    #
+    #             # If previous note 4th stored, new bpm is calculated.
+    #             if self.t0_ext_tick_24:
+    #                 t_24 = t_now - self.t0_ext_tick_24
+    #                 bpm = 60. / t_24
+    #                 self.midi_clock.set_bpm(bpm)
+    #
+    #             self.t0_ext_tick_24 = t_now
+    #             # print(self.midi_clock.bpm)
 
     def set_triplets_on_off(self):
         """
@@ -451,10 +454,10 @@ class App:
         self.recorder.remove_cue_loop()
         self.view.set_cue_state(self.recorder.is_cue)
 
-    def set_hold_tempo_on_off(self, message):
-        if self.is_hold_tempo:
-            self.is_hold_tempo = False
-        else:
-            self.is_hold_tempo = True
-
-        self.view.set_hold_tempo(self.is_hold_tempo)
+    # def set_hold_tempo_on_off(self):
+    #     if self.is_hold_tempo:
+    #         self.is_hold_tempo = False
+    #     else:
+    #         self.is_hold_tempo = True
+    #
+    #     self.view.set_hold_tempo(self.is_hold_tempo)

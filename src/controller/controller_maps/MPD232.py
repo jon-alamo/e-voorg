@@ -9,9 +9,10 @@ controller_map = {
         'default_mode': {
             153: {'fcn': 'note_on'},
             137: {'fcn': 'note_off'},
-            248: {'fcn': 'external_tick', 'kwargs': {}},
+            # 248: {'fcn': 'external_tick', 'kwargs': {}},
 
             176: {
+                8: {'fcn': 'increase_bpm'},
                 21: {
                     0: {'fcn': 'set_view', 'kwargs': {'view': 'default_view'}}
                 },
@@ -50,10 +51,11 @@ controller_map = {
         },
 
         'delete_mode': {
-            248: {'fcn': 'external_tick', 'kwargs': {}},
+            # 248: {'fcn': 'external_tick', 'kwargs': {}},
             153: {'fcn': 'delete_note'},
 
             176: {
+                8: {'fcn': 'increase_bpm'},
                 21: {
                     0: {'fcn': 'set_view', 'kwargs': {'view': 'default_view'}}
                 },
@@ -87,11 +89,12 @@ controller_map = {
     'clips_view': {
 
         'default_mode': {
-            248: {'fcn': 'external_tick', 'kwargs': {}},
+            # 248: {'fcn': 'external_tick', 'kwargs': {}},
             153: {
                 channel: {'set_waitfor_trigger': (137, channel, 0), 'wait_time': 0.5, 'time': None, 'long': {'fcn': 'save_clip'}, 'short': {'fcn': 'play_clip'}} for channel in channels
             },
             176: {
+                8: {'fcn': 'increase_bpm'},
                 21: {
                     0: {'fcn': 'set_view', 'kwargs': {'view': 'default_view'}}
                 },
@@ -128,10 +131,11 @@ controller_map = {
         },
 
         'delete_mode': {
-            248: {'fcn': 'external_tick', 'kwargs': {}},
+            # 248: {'fcn': 'external_tick', 'kwargs': {}},
             153: {'fcn': 'delete_clip'},
 
             176: {
+                8: {'fcn': 'increase_bpm'},
                 21: {
                     0: {'fcn': 'set_view', 'kwargs': {'view': 'default_view'}}
                 },
