@@ -57,6 +57,7 @@ class App:
         self.is_rec = False
         self.is_tick = True
         self.tick = 1
+        self.is_hold_tempo = False
 
         # External tick parameters
         self.ext_tick = 1
@@ -394,18 +395,20 @@ class App:
         the internal clock is recalculated, but clock is always internal.
         :return: None
         """
-        self.ext_tick = self.ext_tick % 96 + 1
 
-        if self.ext_tick % 24 == 1:
-            t_now = time.time()
+        if not self.is_hold_tempo:
+            self.ext_tick = self.ext_tick % 96 + 1
 
-            # If previous note 4th stored, new bpm is calculated.
-            if self.t0_ext_tick_24:
-                t_24 = t_now - self.t0_ext_tick_24
-                bpm = 60. / t_24
-                self.midi_clock.set_bpm(bpm)
+            if self.ext_tick % 24 == 1:
+                t_now = time.time()
 
-            self.t0_ext_tick_24 = t_now
+                # If previous note 4th stored, new bpm is calculated.
+                if self.t0_ext_tick_24:
+                    t_24 = t_now - self.t0_ext_tick_24
+                    bpm = 60. / t_24
+                    self.midi_clock.set_bpm(bpm)
+
+                self.t0_ext_tick_24 = t_now
 
     def set_triplets_on_off(self):
         """
@@ -447,3 +450,11 @@ class App:
     def remove_cue_loop(self, message):
         self.recorder.remove_cue_loop()
         self.view.set_cue_state(self.recorder.is_cue)
+
+    def set_hold_tempo_on_off(self, message):
+        if self.is_hold_tempo:
+            self.is_hold_tempo = False
+        else:
+            self.is_hold_tempo = True
+
+        self.view.set_hold_tempo(self.is_hold_tempo)

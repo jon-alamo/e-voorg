@@ -28,6 +28,9 @@ controller_map = {
                     127: {'set_waitfor_trigger': (176, 25, 0), 'wait_time': 0.5, 'time': None,
                      'short': {'fcn': 'change_cue_loop_status'}, 'long': {'fcn': 'remove_cue_loop'}},
                 },
+                26: {
+                    0: {'fcn': 'set_hold_tempo_on_off', 'kwargs': {}}
+                },
                 117: {
                     127: {'fcn': 'stop', 'kwargs': {}}
                 },
@@ -67,6 +70,9 @@ controller_map = {
                     127: {'set_waitfor_trigger': (176, 25, 0), 'wait_time': 0.5, 'time': None,
                           'short': {'fcn': 'change_cue_loop_status'}, 'long': {'fcn': 'remove_cue_loop'}},
                 },
+                26: {
+                    0: {'fcn': 'set_hold_tempo_on_off', 'kwargs': {}}
+                },
                 117: {
                     127: {'fcn': 'stop', 'kwargs': {}}
                 },
@@ -101,6 +107,9 @@ controller_map = {
                 25: {
                     127: {'set_waitfor_trigger': (176, 25, 0), 'wait_time': 0.5, 'time': None,
                           'short': {'fcn': 'change_cue_loop_status'}, 'long': {'fcn': 'remove_cue_loop'}},
+                },
+                26: {
+                    0: {'fcn': 'set_hold_tempo_on_off', 'kwargs': {}}
                 },
                 117: {
                     127: {'fcn': 'stop', 'kwargs': {}}
@@ -138,6 +147,9 @@ controller_map = {
                 25: {
                     127: {'set_waitfor_trigger': (176, 25, 0), 'wait_time': 0.5, 'time': None,
                           'short': {'fcn': 'change_cue_loop_status'}, 'long': {'fcn': 'remove_cue_loop'}},
+                },
+                26: {
+                    0: {'fcn': 'set_hold_tempo_on_off', 'kwargs': {}}
                 },
                 117: {
                     127: {'fcn': 'stop', 'kwargs': {}}

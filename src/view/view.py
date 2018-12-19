@@ -151,3 +151,10 @@ class View:
             self.draw_state('cue_button_on')
         else:
             self.draw_state('cue_button_off')
+
+    def set_hold_tempo(self, state):
+
+        if state:
+            self.draw_state('hold_tempo_on')
+        else:
+            self.draw_state('hold_tempo_off')

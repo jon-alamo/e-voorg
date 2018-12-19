@@ -51,6 +51,12 @@ view_map = {
     'cue_button_off': {
         25: {'midi_address': 176, 'color': colors['off'], 'view': 'always'},
     },
+    'hold_tempo_on': {
+        26: {'midi_address': 176, 'color': colors['on'], 'view': 'always'},
+    },
+    'hold_tempo_off': {
+        26: {'midi_address': 176, 'color': colors['off'], 'view': 'always'},
+    },
     'play': {},
     'stop': {}
 }
