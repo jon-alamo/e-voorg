@@ -20,17 +20,17 @@ The code is Python 3.6 and can runs on Windows, Linux and Mac, with the rtmidi d
     Midi drum pad controller with velocity sensitive pads and ideally polyphonic aftertouch.
 
 - Linux (Tested on Raspbian Stretch & Raspbian Stretch Lite)
-    sudo apt-get update
-    sudo apt-get install libasound2-dev
-    sudo apt-get install libjack-dev
-    sudo pip install -r requirements.txt
+    * sudo apt-get update
+    * sudo apt-get install libasound2-dev
+    * sudo apt-get install libjack-dev
+    * sudo pip install -r requirements.txt
 
 - Windows (Tested on Windows 10)
-    Microsoft Visual C++ 14.0 standalone: Visual C++ Build Tools 2015 (x86, x64, ARM)
-    pip install -r requirements.txt
+    * Microsoft Visual C++ 14.0 standalone: Visual C++ Build Tools 2015 (x86, x64, ARM)
+    * pip install -r requirements.txt
 
 - MacOS 10.13
-    pip install -r requirements.txt
+    * pip install -r requirements.txt
 
 ## Features
 
