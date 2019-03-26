@@ -1,4 +1,4 @@
-# e-voorg - Live Rhythm Box Assistant
+# e-voorg - Rhythm Live Sequencer
 
 
 ## Description
