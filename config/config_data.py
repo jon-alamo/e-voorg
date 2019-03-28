@@ -1,4 +1,5 @@
-ETHERNET_IP = '192.168.137.1'
+# ETHERNET_IP = '192.168.137.1'
+ETHERNET_IP = 'localhost'
 ETHERNET_PORT = 9095
 
 KNOWN_DEVICES = {
@@ -12,13 +13,18 @@ KNOWN_DEVICES = {
             'linux': 'MPD218',
             'win32': 'MPD218',
             'osx': 'MPD218'
+        },
+        'MPD226': {
+            'linux': 'MPD226',
+            'win32': 'MPD226',
+            'osx': 'MPD226'
         }
     },
     'midi_interface': {
         'UM-ONE': {
-            'linux': 'UM-ONE',
-            'win32': 'UM-ONE',
-            'osx': 'UM-ONE'
+            'linux': 'USB',
+            'win32': 'USB',
+            'osx': 'USB'
         },
         'MPD232': {
             'win32': 'MIDIOUT3',
