@@ -1,5 +1,5 @@
 import socket
-from src.interfaces.midi_interface.midi_data import NOTE_ON, NOTE_OFF, SONG_START, SONG_STOP
+from src.interfaces.midi_interface.midi_data import NOTE_ON, NOTE_OFF, SONG_START, SONG_STOP, TIMING_CLOCK
 from pythonosc.osc_message import OscMessage
 from pythonosc.osc_message_builder import OscMessageBuilder
 
@@ -22,14 +22,18 @@ class OscOutput:
 
     @staticmethod
     def build_osc_message(message):
+
+        # todo: Move to elsewhere from here.
         if message[0] in NOTE_ON:
             address = '/noteon'
         elif message[0] in NOTE_OFF:
             address = '/noteoff'
         elif message[0] == SONG_START:
-            address = '/play'
+            address = '/start'
         elif message[0] == SONG_STOP:
             address = '/stop'
+        elif message[0] == TIMING_CLOCK:
+            address = '/clock'
         else:
             address = '/unknown'
 
