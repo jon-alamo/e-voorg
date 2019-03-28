@@ -24,10 +24,12 @@ def get_midi_io_ports(known_devices, current_platform):
             if known_devices[known_controller_device][current_platform] in in_device:
                 found_io_ports['midi_in'] = in_device
                 controller_name = known_controller_device
+                break
 
         for out_device in available_midi_devices['midi_out']:
             if known_devices[known_controller_device][current_platform] in out_device:
                 found_io_ports['midi_out'] = out_device
+                break
 
     return found_io_ports, controller_name
 
