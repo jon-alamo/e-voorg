@@ -5,6 +5,7 @@ from pythonosc.osc_message_builder import OscMessageBuilder
 
 
 class OscOutput:
+    MIDI_ADDRESS = '/midi'
 
     def __init__(self, host, port):
         self.host = host
@@ -20,31 +21,14 @@ class OscOutput:
         osc_message = self.build_osc_message(message)
         sock.sendto(osc_message, (self.host, self.port))
 
-    @staticmethod
-    def build_osc_message(message):
+    def build_osc_message(self, message):
 
-        # todo: Move to elsewhere from here.
-        if message[0] in NOTE_ON:
-            address = '/noteon'
-        elif message[0] in NOTE_OFF:
-            address = '/noteoff'
-        elif message[0] == SONG_START:
-            address = '/start'
-        elif message[0] == SONG_STOP:
-            address = '/stop'
-        elif message[0] == TIMING_CLOCK:
-            address = '/clock'
-        else:
-            address = '/unknown'
-
-        osc_message = OscMessageBuilder(address)
+        osc_message = OscMessageBuilder(self.MIDI_ADDRESS)
 
         for value in message:
             osc_message.add_arg(value)
 
-        dgram = osc_message.build().dgram
-
-        return dgram
+        return osc_message.build().dgram
 
     def enqueue(self, midi_message):
         self.queue.append(midi_message)
@@ -98,8 +82,9 @@ class OscInput:
 
 
 if __name__ == '__main__':
-    o = OscOutput('localhost', 5555)
+    o = OscInput('localhost', 5555)
 
-    for i in range(10):
-        o.send([144, i, 127])
-        o.send([137, i, 127])
+    while True:
+        msg = o.receive()
+        if msg:
+            print(msg)
