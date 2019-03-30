@@ -4,15 +4,15 @@ controller_map = {
     'default_view': {
 
         'default_mode': {
-            248: {'fcn': 'clock_event'},
-            250: {'fcn': 'play'},
-            252: {'fcn': 'stop'},
+            248: {'fcn': 'clock_event', 'kwargs': {}},
+            250: {'fcn': 'play', 'kwargs': {}},
+            252: {'fcn': 'stop', 'kwargs': {}},
         },
 
         'delete_mode': {
-            248: {'fcn': 'clock_event'},
-            250: {'fcn': 'play'},
-            252: {'fcn': 'stop'},
+            248: {'fcn': 'clock_event', 'kwargs': {}},
+            250: {'fcn': 'play', 'kwargs': {}},
+            252: {'fcn': 'stop', 'kwargs': {}},
         },
     }
 }
