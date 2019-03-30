@@ -6,12 +6,13 @@ from src.recorder.recorder import Recorder
 from src.interfaces.midi_interface.midi_data import SONG_START, SONG_STOP, TIMING_CLOCK
 from src.midi_clock.midi_clock import MidiClock
 from src.interfaces.ethernet_interface.ethernet_interface import EthernetOutputInterface
+from src.interfaces.osc_interface.osc_interface import OscInput, OscOutput
 import time
 
 
 class App:
 
-    def __init__(self, controller, midi_interface, controller_map, viewer_map, ethernet_port, ethernet_ip):
+    def __init__(self, controller, osc_controller_map, controller_map, viewer_map, ethernet_port, ethernet_ip):
 
         # Interfaces initialization
         self.control_interface = MidiInterface(
@@ -31,12 +32,11 @@ class App:
             memory_clips=self.memory_clips
         )
 
-        # Midi out interface
-        self.midi_out_interface = MidiInterface(
-            midi_interface['midi_in'],
-            midi_interface['midi_out'],
-            'midi_out_interface'
-        )
+        self.midi_out_interface = OscOutput('localhost', 5001)
+
+        # OSC Input interface
+        self.osc_input = OscInput('localhost', 5000)
+        self.osc_input_controller = Controller(self.osc_input, osc_controller_map)
 
         # Midi clock
         self.midi_clock = MidiClock(bpm=100)
@@ -71,18 +71,16 @@ class App:
         """
         while True:
 
+            # OSC Sync
+            osc_interaction = self.controller.get_interaction()
             # Controller's input user interactions.
             control_interaction = self.controller.get_interaction()
             # Footswitch (keyboard)'s input user interactions.
             footswitch_interaction = self.footswitch.get_interaction()
 
-            if self.is_play:
-                # Get tick from internal clock or none if the current time doesn't correspond to a tick event.
-                tick = self.midi_clock.get_tick()
-
-                if tick:
-                    # Update tick values and flags, and send external sync messages.
-                    self.tick_event()
+            if osc_interaction:
+                self.exec_control(osc_interaction)
+                self.view.draw_feedback(osc_interaction)
 
             if control_interaction:
                 # Execute function due to input device interaction
@@ -246,7 +244,7 @@ class App:
 
         # Send sync messages
         self.eth_out.send([TIMING_CLOCK])
-        self.midi_out_interface.send([TIMING_CLOCK])
+        # self.midi_out_interface.send([TIMING_CLOCK])
 
     def process_tick(self):
         """
@@ -308,7 +306,7 @@ class App:
         self.is_play = False
 
         self.eth_out.send([SONG_STOP])
-        self.midi_out_interface.send([SONG_STOP])
+        # self.midi_out_interface.send([SONG_STOP])
 
         self.midi_clock.stop()
         self.view.stop()
@@ -324,7 +322,7 @@ class App:
         self.midi_clock.start()
 
         self.eth_out.send([SONG_START])
-        self.midi_out_interface.send([SONG_START])
+        # self.midi_out_interface.send([SONG_START])
 
         self.view.play()
 

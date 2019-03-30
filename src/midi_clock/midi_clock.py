@@ -5,7 +5,7 @@ MIN_BPM = 60
 MAX_BPM = 180
 
 
-class MidiClock(object):
+class MidiClock:
 
     def __init__(self, bpm=100):
         # Set bpm parameter default value to 120.

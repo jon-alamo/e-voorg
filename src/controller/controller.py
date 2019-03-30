@@ -4,7 +4,7 @@ from src.interfaces.midi_interface.midi_interface import MidiInterface
 
 class Controller:
 
-    def __init__(self, interface: MidiInterface, controller_map):
+    def __init__(self, interface, controller_map):
 
         self.interface = interface
 

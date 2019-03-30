@@ -20,14 +20,17 @@ if __name__ == '__main__':
     # Viewer map python module
     viewer_module = get_python_module(VIEWER_ROUTE, controller_name)
 
+    # OSC Input Map
+    osc_controller_map = get_python_module(CONTROLLER_ROUTE, 'OSC_INPUT')
+
     # App config dictionary
     config = {
         'controller': controller_io_ports,
-        'midi_interface': midi_interface_io_ports,
         'controller_map': controller_module,
         'viewer_map': viewer_module,
         'ethernet_port': ETHERNET_PORT,
-        'ethernet_ip': ETHERNET_IP
+        'ethernet_ip': ETHERNET_IP,
+        'osc_controller_map': osc_controller_map
     }
 
     try:
