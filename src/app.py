@@ -20,6 +20,7 @@ class App:
             controller['midi_out'],
             'control_interface'
         )
+
         self.view_interface = self.control_interface
         self.controller = Controller(self.control_interface, controller_map)
         self.view = View(self.view_interface, viewer_map)
