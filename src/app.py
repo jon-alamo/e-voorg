@@ -39,7 +39,7 @@ class App:
         self.osc_input_controller = Controller(self.osc_input, osc_controller_map)
 
         # Midi clock
-        self.midi_clock = MidiClock(bpm=100)
+        # self.midi_clock = MidiClock(bpm=100)
 
         # Midi out ethernet interface
         self.eth_out = EthernetOutputInterface(host=ethernet_ip, port=ethernet_port)
@@ -149,9 +149,9 @@ class App:
         elif not self.view_interface.is_empty():
             self.view_interface.send_first()
 
-        # If no messages in buffers and still enough time to next tick, sleep to reduce process time
-        elif (self.midi_clock.tick_time - 0.005) > (self.midi_clock.timer() - self.midi_clock.t0) or not self.is_play:
-            time.sleep(0.001)
+        # # If no messages in buffers and still enough time to next tick, sleep to reduce process time
+        # elif (self.midi_clock.tick_time - 0.005) > (self.midi_clock.timer() - self.midi_clock.t0) or not self.is_play:
+        time.sleep(0.001)
 
     def exec_control(self, control):
         """
@@ -308,7 +308,7 @@ class App:
         self.eth_out.send([SONG_STOP])
         # self.midi_out_interface.send([SONG_STOP])
 
-        self.midi_clock.stop()
+        # self.midi_clock.stop()
         self.view.stop()
 
     def play(self):
@@ -319,7 +319,7 @@ class App:
         self.tick = 1
         self.ext_tick = 1
         self.is_play = True
-        self.midi_clock.start()
+        # self.midi_clock.start()
 
         self.eth_out.send([SONG_START])
         # self.midi_out_interface.send([SONG_START])
@@ -386,7 +386,7 @@ class App:
         else:
             delta = float(value) * 0.1
 
-        self.midi_clock.increase_bpm(delta)
+        # self.midi_clock.increase_bpm(delta)
 
     # def external_tick(self):
     #     """
