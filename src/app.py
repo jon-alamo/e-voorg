@@ -72,7 +72,7 @@ class App:
         while True:
 
             # OSC Sync
-            osc_interaction = self.controller.get_interaction()
+            osc_interaction = self.osc_input_controller.get_interaction()
             # Controller's input user interactions.
             control_interaction = self.controller.get_interaction()
             # Footswitch (keyboard)'s input user interactions.
