@@ -85,15 +85,15 @@ controller_map = {
 
                 48: {'fcn': 'set_triplets_on_off', 'kwargs': {}},
                 49: {'fcn': 'switch_mode', 'kwargs': {'mode': 'delete_mode'}},
-                51: {'fcn': 'internal_play_stop', 'kwargs': {}},
+                # 51: {'fcn': 'internal_play_stop', 'kwargs': {}},
 
                 64: {'fcn': 'set_triplets_on_off', 'kwargs': {}},
                 65: {'fcn': 'switch_mode', 'kwargs': {'mode': 'delete_mode'}},
-                67: {'fcn': 'internal_play_stop', 'kwargs': {}},
+                # 67: {'fcn': 'internal_play_stop', 'kwargs': {}},
 
                 80: {'fcn': 'set_triplets_on_off', 'kwargs': {}},
                 81: {'fcn': 'switch_mode', 'kwargs': {'mode': 'delete_mode'}},
-                83: {'fcn': 'internal_play_stop', 'kwargs': {}},
+                # 83: {'fcn': 'internal_play_stop', 'kwargs': {}},
 
             },
 

@@ -10,6 +10,7 @@ controller_map = {
             153: {'fcn': 'note_on'},
             137: {'fcn': 'note_off'},
             # 248: {'fcn': 'external_tick', 'kwargs': {}},
+            217: {'fcn': 'set_channel_pressure'},
 
             176: {
                 8: {'fcn': 'increase_bpm'},
@@ -23,7 +24,7 @@ controller_map = {
                     0: {'fcn': 'switch_mode', 'kwargs': {'mode': 'delete_mode'}}
                 },
                 24: {
-                    0: {'fcn': 'set_tripplets_on_off', 'kwargs': {}}
+                    0: {'fcn': 'set_triplets_on_off', 'kwargs': {}}
                 },
                 25: {
                     127: {'set_waitfor_trigger': (176, 25, 0), 'wait_time': 0.5, 'time': None,
@@ -32,12 +33,12 @@ controller_map = {
                 26: {
                     0: {'fcn': 'set_hold_tempo_on_off', 'kwargs': {}}
                 },
-                117: {
-                    127: {'fcn': 'stop', 'kwargs': {}}
-                },
-                118: {
-                    127: {'fcn': 'play', 'kwargs': {}}
-                },
+                # 117: {
+                #     127: {'fcn': 'stop', 'kwargs': {}}
+                # },
+                # 118: {
+                #     127: {'fcn': 'play', 'kwargs': {}}
+                # },
                 119: {
                     127: {'fcn': 'set_rec_on_off', 'kwargs': {}}
                 },
@@ -66,7 +67,7 @@ controller_map = {
                     0: {'fcn': 'switch_mode', 'kwargs': {'mode': 'default_mode'}}
                 },
                 24: {
-                    0: {'fcn': 'set_tripplets_on_off', 'kwargs': {}}
+                    0: {'fcn': 'set_triplets_on_off', 'kwargs': {}}
                 },
                 25: {
                     127: {'set_waitfor_trigger': (176, 25, 0), 'wait_time': 0.5, 'time': None,
@@ -75,12 +76,12 @@ controller_map = {
                 26: {
                     0: {'fcn': 'set_hold_tempo_on_off', 'kwargs': {}}
                 },
-                117: {
-                    127: {'fcn': 'stop', 'kwargs': {}}
-                },
-                118: {
-                    127: {'fcn': 'play', 'kwargs': {}}
-                },
+                # 117: {
+                #     127: {'fcn': 'stop', 'kwargs': {}}
+                # },
+                # 118: {
+                #     127: {'fcn': 'play', 'kwargs': {}}
+                # },
                 -1: {'fcn': 'cc'}
             }
         }
@@ -105,7 +106,7 @@ controller_map = {
                     0: {'fcn': 'switch_mode', 'kwargs': {'mode': 'delete_mode'}}
                 },
                 24: {
-                    0: {'fcn': 'set_tripplets_on_off', 'kwargs': {}}
+                    0: {'fcn': 'set_triplets_on_off', 'kwargs': {}}
                 },
                 25: {
                     127: {'set_waitfor_trigger': (176, 25, 0), 'wait_time': 0.5, 'time': None,
@@ -114,12 +115,12 @@ controller_map = {
                 26: {
                     0: {'fcn': 'set_hold_tempo_on_off', 'kwargs': {}}
                 },
-                117: {
-                    127: {'fcn': 'stop', 'kwargs': {}}
-                },
-                118: {
-                    127: {'fcn': 'play', 'kwargs': {}}
-                },
+                # 117: {
+                #     127: {'fcn': 'stop', 'kwargs': {}}
+                # },
+                # 118: {
+                #     127: {'fcn': 'play', 'kwargs': {}}
+                # },
                 119: {
                     127: {'fcn': 'set_rec_on_off', 'kwargs': {}}
                 },
@@ -146,7 +147,7 @@ controller_map = {
                     0: {'fcn': 'switch_mode', 'kwargs': {'mode': 'default_mode'}}
                 },
                 24: {
-                    0: {'fcn': 'set_tripplets_on_off', 'kwargs': {}}
+                    0: {'fcn': 'set_triplets_on_off', 'kwargs': {}}
                 },
                 25: {
                     127: {'set_waitfor_trigger': (176, 25, 0), 'wait_time': 0.5, 'time': None,
@@ -155,12 +156,12 @@ controller_map = {
                 26: {
                     0: {'fcn': 'set_hold_tempo_on_off', 'kwargs': {}}
                 },
-                117: {
-                    127: {'fcn': 'stop', 'kwargs': {}}
-                },
-                118: {
-                    127: {'fcn': 'play', 'kwargs': {}}
-                },
+                # 117: {
+                #     127: {'fcn': 'stop', 'kwargs': {}}
+                # },
+                # 118: {
+                #     127: {'fcn': 'play', 'kwargs': {}}
+                # },
                 -1: {'fcn': 'cc'}
             }
         }

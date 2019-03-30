@@ -125,7 +125,7 @@ def get_devices():
 
 
 if __name__ == '__main__':
-    m = MidiInterface('MPD226', 'MPD226')
+    m = MidiInterface('MPD232', 'MPD232')
 
     while True:
         msg = m.receive()

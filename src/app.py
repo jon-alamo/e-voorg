@@ -3,7 +3,7 @@ from src.controller.controller import Controller
 from src.interfaces.footswitch_interface.footswitch_interface import FootSwitch
 from src.view.view import View
 from src.recorder.recorder import Recorder
-from src.interfaces.midi_interface.midi_data import SONG_START, SONG_STOP, TIMING_CLOCK
+from src.interfaces.midi_interface.midi_data import SONG_START, SONG_STOP, TIMING_CLOCK, CHANNEL_PRESSURE
 from src.midi_clock.midi_clock import MidiClock
 from src.interfaces.ethernet_interface.ethernet_interface import EthernetOutputInterface
 from src.interfaces.osc_interface.osc_interface import OscInput, OscOutput
@@ -61,7 +61,6 @@ class App:
         self.is_hold_tempo = False
 
         # External tick parameters
-        self.ext_tick = 1
         self.t0_ext_tick_24 = None
 
     def loop(self):
@@ -318,7 +317,6 @@ class App:
         :return: None
         """
         self.tick = 1
-        self.ext_tick = 1
         self.is_play = True
         # self.midi_clock.start()
 
@@ -388,29 +386,6 @@ class App:
             delta = float(value) * 0.1
 
         # self.midi_clock.increase_bpm(delta)
-
-    # def external_tick(self):
-    #     """
-    #     If a external midi sync message is received, this method is called, so time is stored every note 4th and bpm of
-    #     the internal clock is recalculated, but clock is always internal.
-    #     :return: None
-    #     """
-    #
-    #     self.ext_tick = self.ext_tick % 96 + 1
-    #
-    #     if not self.is_hold_tempo:
-    #
-    #         if self.ext_tick % 24 == 1:
-    #             t_now = time.time()
-    #
-    #             # If previous note 4th stored, new bpm is calculated.
-    #             if self.t0_ext_tick_24:
-    #                 t_24 = t_now - self.t0_ext_tick_24
-    #                 bpm = 60. / t_24
-    #                 self.midi_clock.set_bpm(bpm)
-    #
-    #             self.t0_ext_tick_24 = t_now
-    #             # print(self.midi_clock.bpm)
 
     def set_triplets_on_off(self):
         """

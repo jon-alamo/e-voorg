@@ -43,7 +43,7 @@ view_map = {
         24: {'midi_address': 176, 'color': colors['on'], 'view': 'always'},
     },
     'triplets_button_off': {
-        24: {'midi_address': 176, 'color': colors['on'], 'view': 'always'},
+        24: {'midi_address': 176, 'color': colors['off'], 'view': 'always'},
     },
     'cue_button_on': {
         25: {'midi_address': 176, 'color': colors['on'], 'view': 'always'},
