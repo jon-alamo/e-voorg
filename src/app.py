@@ -3,8 +3,7 @@ from src.controller.controller import Controller
 from src.interfaces.footswitch_interface.footswitch_interface import FootSwitch
 from src.view.view import View
 from src.recorder.recorder import Recorder
-from src.interfaces.midi_interface.midi_data import SONG_START, SONG_STOP, TIMING_CLOCK, CHANNEL_PRESSURE
-from src.midi_clock.midi_clock import MidiClock
+from src.interfaces.midi_interface.midi_data import SONG_START, SONG_STOP, TIMING_CLOCK
 from src.interfaces.ethernet_interface.ethernet_interface import EthernetOutputInterface
 from src.interfaces.osc_interface.osc_interface import OscInput, OscOutput
 import time
@@ -185,7 +184,7 @@ class App:
         :param message: Midi message with channel, note and velocity.
         :return: None
         """
-        # todo: not compatiblewith kompo since channels are not the same in kompo and evoorg. Set index as constant.
+        # todo: not compatible with kompo since channels are not the same in kompo and evoorg. Set index as constant.
         self.pressed_notes[message[1]] = message
         self.recorder.channels_to_mute[message[1]] = False
 
@@ -244,7 +243,6 @@ class App:
 
         # Send sync messages
         self.eth_out.send([TIMING_CLOCK])
-        # self.midi_out_interface.send([TIMING_CLOCK])
 
     def process_tick(self):
         """
@@ -304,11 +302,8 @@ class App:
         :return: None
         """
         self.is_play = False
-
         self.eth_out.send([SONG_STOP])
-        # self.midi_out_interface.send([SONG_STOP])
-
-        # self.midi_clock.stop()
+        self.recorder.stop()
         self.view.stop()
 
     def play(self):
@@ -427,11 +422,3 @@ class App:
     def remove_cue_loop(self, message):
         self.recorder.remove_cue_loop()
         self.view.set_cue_state(self.recorder.is_cue)
-
-    # def set_hold_tempo_on_off(self):
-    #     if self.is_hold_tempo:
-    #         self.is_hold_tempo = False
-    #     else:
-    #         self.is_hold_tempo = True
-    #
-    #     self.view.set_hold_tempo(self.is_hold_tempo)

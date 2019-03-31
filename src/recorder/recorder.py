@@ -224,3 +224,7 @@ class Recorder:
 
     def remove_cue_loop(self):
         self.is_cue = 0
+
+    def stop(self):
+        for channel in self.channels:
+            self.bar_indexes[channel] = 0
